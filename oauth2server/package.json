@@ -1,0 +1,17 @@
+{
+  "name": "oauth2server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "author": "Brendan Dobbs <brendan.dobbs@sap.com>",
+  "license": "ISC",
+  "dependencies": {
+    "express-oauth-server": "^2.0.0",
+    "http": "0.0.0",
+    "https": "^1.0.0"
+  }
+}

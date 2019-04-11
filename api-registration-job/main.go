@@ -15,6 +15,8 @@ type registrationApp struct {
 	authUsername string
 	authPassword string
 	apiURL       string
+	provider     string
+	product      string
 }
 
 type endpointInfo struct {
@@ -34,6 +36,8 @@ func main() {
 		authUsername: os.Getenv("auth_username"),
 		authPassword: os.Getenv("auth_password"),
 		apiURL:       apiURL,
+		provider:     os.Getenv("provider"),
+		product:      os.Getenv("product"),
 	}
 	r.registerStaticEvents()
 	r.readEndpoints()
@@ -127,8 +131,8 @@ func (r registrationApp) generateMetadata(endpoint endpointInfo) []byte {
 	check(err)
 	specificationsURL.User = url.UserPassword(r.authUsername, r.authPassword)
 	specificationsURL.Path = endpoint.API + "/$metadata"
-	provider := os.Getenv("provider")
-	productName := os.Getenv("product")
+
+	tokenEndpointURL := r.hostname + endpoint.API
 	metadata := fmt.Sprintf(`
 			{
 				"provider" : "%s",
@@ -142,12 +146,15 @@ func (r registrationApp) generateMetadata(endpoint endpointInfo) []byte {
 					"credentials": {
 						"basic": {
 							"username":"%s",
-							"password":"%s"
+							"password":"%s",
+							"csrfInfo":{
+								"tokenEndpointURL":"%s"
+							}
 						}
 					}
 				}
 			}
-	`, provider, productName, name, endpoint.API, endpoint.Description, targetURL, specificationsURL.String(), r.authUsername, r.authPassword)
+	`, r.provider, r.product, name, endpoint.API, endpoint.Description, targetURL, specificationsURL.String(), r.authUsername, r.authPassword, tokenEndpointURL)
 
 	fmt.Println(metadata)
 	return []byte(metadata)

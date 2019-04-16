@@ -1,14 +1,14 @@
 "use strict"
 const mqtt = require('mqtt');
 
-const mqttServer = process.env.MQTT_SERVER
-//const mqttServrer= "wss://hb-marketing-default-4c5417f4-6040-11e9-82a1-0a580a40-mqtt.sjanota.kyma.pro"
+const mqttServer = process.env.MQTT_SERVER || "ws://localhost:8080"
+//const mqttServer = "wss://hb-marketing-default-4c5417f4-6040-11e9-82a1-0a580a40-mqtt.sjanota.kyma.pro"
 const client = mqtt.connect(mqttServer, { wsOptions: { headers: { 'authorization': 'Bearer TOKEN' } } });
 const delay = 1000
 
 const sampleEvent = {
     "eventType": "User.registered",
-    "cloudEventsVersion": "0.1",
+    "eventVersion": "v1",
     "source": "https://example.com",
     "eventTime": "2019-03-14T02:30:16Z",
     "schemaURL": "https://example.com/ODATA_SPEC/",

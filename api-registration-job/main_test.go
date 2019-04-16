@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"testing"
 )
 
@@ -46,4 +48,15 @@ func Test_registrationApp_generateMetadata(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProtocol(t *testing.T) {
+	given := "hostname.com"
+	u, _ := url.Parse(given)
+	if u.Scheme == "" {
+		u.Scheme = "https"
+	}
+
+	fmt.Println(u.String())
+
 }

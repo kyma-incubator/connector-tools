@@ -36,6 +36,9 @@ pipeline {
                         },
                         "api-registration-job":{
                             execute("api-registration-job")
+                        },
+                        "oauth2server":{
+                            execute("oauth2server")
                         }
                     )
                 }

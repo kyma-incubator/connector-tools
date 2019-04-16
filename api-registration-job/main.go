@@ -39,6 +39,13 @@ func main() {
 		provider:     os.Getenv("provider"),
 		product:      os.Getenv("product"),
 	}
+	u, err := url.Parse(r.hostname)
+	check(err)
+	if u.Scheme == "" {
+		u.Scheme = "https"
+	}
+	r.hostname = u.String()
+
 	r.registerStaticEvents()
 	r.readEndpoints()
 }

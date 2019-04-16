@@ -12,14 +12,12 @@ function InMemoryCache() {
         grants: ['client_credentials'],
       }];
   this.tokens = [];
-  this.users = [{ id : '1', username: 'kyma', password: 'kyma' }];
-}
+ }
 
 /*
  * Get access token.
  */
 InMemoryCache.prototype.getAccessToken = function(bearerToken) {
-  console.log('called getAccessToken, bearerToken=', bearerToken);
   var tokens = this.tokens.filter(function(token) {
     return token.accessToken === bearerToken;
   });
@@ -31,7 +29,6 @@ InMemoryCache.prototype.getAccessToken = function(bearerToken) {
  * Get refresh token.
  */
 InMemoryCache.prototype.getRefreshToken = function(bearerToken) {
-  console.log('called getRefreshToken, bearerToken=', bearerToken);
   var tokens = this.tokens.filter(function(token) {
     return token.refreshToken === bearerToken;
   });
@@ -43,7 +40,6 @@ InMemoryCache.prototype.getRefreshToken = function(bearerToken) {
  * Get client.
  */
 InMemoryCache.prototype.getClient = function(clientId, clientSecret) {
-  console.log(`called InMemoryCache.getClient - clientId=${clientId}, clientSecret=${clientSecret}`);
   var clients = this.clients.filter(function(client) {
     return client.clientId === clientId &&
            client.clientSecret === clientSecret;
@@ -55,7 +51,6 @@ InMemoryCache.prototype.getClient = function(clientId, clientSecret) {
  * Save token.
  */
 InMemoryCache.prototype.saveToken = function(token, client, user) {
-  //console.log('called saveToken', arguments);
   var newToken = {
     accessToken: token.accessToken,
     accessTokenExpiresAt: token.accessTokenExpiresAt,
@@ -65,7 +60,7 @@ InMemoryCache.prototype.saveToken = function(token, client, user) {
     userId: user.id,
     client: client,
     user:user,
-    scope: null, //where are we taking scope from? maybe client?
+    scope: null, 
   };
 
   // make sure our array of tokens never get's bigger than MAX_TOKENS
@@ -81,21 +76,15 @@ InMemoryCache.prototype.saveToken = function(token, client, user) {
  * Get user.
  */
 InMemoryCache.prototype.getUser = function(username, password) {
-  var users = this.users.filter(function(user) {
-    return user.username === username && user.password === password;
-  });
-
-  return users.length ? users[0] : false;
+  return {}
 };
 
 InMemoryCache.prototype.getUserFromClient = function(){
-  console.log('called prototype.getUserFromClient', arguments);
-  //todo: find correct user.
-  return this.users[0];
+  return {};
 }
 
 InMemoryCache.prototype.saveAuthorizationCode = function(){
-    console.log('how is this implemented!?', arguments);
+    // do nothing
 }
 
 /**

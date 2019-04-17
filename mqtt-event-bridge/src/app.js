@@ -16,40 +16,42 @@ let envVariables = {
   oauth_server: process.env.oauth_server
 }
 
-const wss = new WebSocketServer({ 
-    server: server,  
-    verifyClient: async function (info, cb) {
-      console.log("Authenticating client....");
-      const headerToken = info.req.headers['authorization'];
-      console.log(`header token = ${headerToken}`);
-      
-      if (!headerToken) {
-        cb(false, 403,'Unauthorized request: no authentication given');
-          return;
+const wss = new WebSocketServer({
+  server: server,
+  verifyClient: async function (info, cb) {
+    console.log("Authenticating client....");
+    const headerToken = info.req.headers['authorization'];
+    console.log(`header token = ${headerToken}`);
+
+    if (!headerToken) {
+      cb(false, 403, 'Unauthorized request: no authentication given');
+      return;
+    }
+    else {
+      try {
+        var response = await request.get(`${envVariables.oauth_server}/validate`, { resolveWithFullResponse: true, headers: { 'authorization': headerToken } });
+        if (response.statusCode == 200) {
+          console.log('successful');
+          cb(true);
+        }
+        else {
+          console.log('authentication failed');
+          cb(false, response.statusCode, 'authentication failed');
+        }
       }
-      else {  
-        try {
-          var response = await request.get(`${envVariables.oauth_server}/validate`, { resolveWithFullResponse: true, headers:{ 'authorization': headerToken}});
-          if (response.statusCode == 200) {
-           console.log('successful');
-           cb(true);
-          }
-          else {
-            console.log('authentication failed');
-            cb(false, response.statusCode, 'authentication failed');
-          }
-        }
-        catch (err) {
-          console.log(`err ${JSON.stringify(err)}`);
-          cb(false, err.statusCode, 'authentication failed');
-        }
-    }}
+      catch (err) {
+        console.log(`err ${JSON.stringify(err)}`);
+        cb(false, err.statusCode, 'authentication failed');
+      }
+    }
+  }
 });
 
 let eventEndpoint = "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events";
 
+console.log("Application Started...")
 if (process.env.DEBUG) {
-  envVariables = require("../test/env.json")
+  console.log(envVariables)
   eventEndpoint = "http://localhost:4000/v1/events"
 }
 wss.on('connection', function (ws) {
@@ -90,7 +92,7 @@ wss.on('connection', function (ws) {
 
 function createEvent(msg) {
   return {
-    "source-id": envVariables.sourceId,
+    "source-id": envVariables.applicationName,
     "event-type": msg.eventType,
     "event-type-version": "v1", // what to use in our case?
     "event-time": msg.eventTime,
@@ -102,7 +104,7 @@ function sendEvent(eventData) {
   console.log("Publishing event to event bus: " + JSON.stringify(eventData));
   return new Promise((resolve, reject) => {
     request.post({ url: eventEndpoint, json: eventData }).then((response) => {
-      resolve(response.body)
+      resolve(response)
     }
     ).catch((err) => reject(err))
   })

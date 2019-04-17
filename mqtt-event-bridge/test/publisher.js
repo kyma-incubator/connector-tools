@@ -9,13 +9,14 @@ const client_secret = process.env.OAUTH_CLIENT_SECRET;
 
 //const mqttServrer= "wss://hb-marketing-default-4c5417f4-6040-11e9-82a1-0a580a40-mqtt.sjanota.kyma.pro"
 
-(async () => {   
-    
-    const oauthToken = await request({ url: oauthServer, method: 'POST', json: true,
+(async () => {
+
+    const oauthToken = await request({
+        url: oauthServer, method: 'POST', json: true,
         form: {
             'grant_type': 'client_credentials',
-            'client_id' : client_id,
-            'client_secret' : client_secret
+            'client_id': client_id,
+            'client_secret': client_secret
         }
     });
 

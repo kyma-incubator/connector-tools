@@ -20,21 +20,19 @@ func Test_registrationApp_generateMetadata(t *testing.T) {
 		{
 			name: "render correctly",
 			r: registrationApp{
-				provider:     "test-provider",
-				product:      "test-product",
-				hostname:     "https://test-hostname.com",
-				authUsername: "test-auth",
-				authPassword: "test-pass",
-				apiURL:       "test-url",
+				ApplicationName: "test-app",
+				ProviderName:    "test-provider",
+				ProductName:     "test-product",
+				SystemURL:       "https://test-hostname.com",
+				BasicUser:       "test-auth",
+				BasicPassword:   "test-pass",
+				RegistrationURL: "test-url",
 			},
 			args: args{
 				endpoint: endpointInfo{
-					API:          "/test-api",
-					Name:         "test-api",
-					Description:  "test-description",
-					HelpDoc:      "test-doc",
-					Scenario:     "test-scenario",
-					ScenarioName: "test-scenaario-name",
+					Path:        "/test-api",
+					Name:        "test-api",
+					Description: "test-description",
 				},
 			},
 		}}

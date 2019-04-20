@@ -55,7 +55,9 @@ def execute(application){
     stage ("push image $application"){
         sh "docker tag $application:latest $registry/$application:$appVersion"
         sh "docker push $registry/$application:$appVersion"
-        sh "docker tag $application:latest $registry/$application:latest"
-        sh "docker push $registry/$application:latest"
+        if(isRelease){
+            sh "docker tag $application:latest $registry/$application:latest"
+            sh "docker push $registry/$application:latest"
+        }
     }
 }

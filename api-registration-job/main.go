@@ -11,43 +11,49 @@ import (
 )
 
 type registrationApp struct {
-	hostname     string
-	authUsername string
-	authPassword string
-	apiURL       string
-	provider     string
-	product      string
+	ApplicationName string
+	SystemURL       string
+	BasicUser       string
+	BasicPassword   string
+	RegistrationURL string
+	ProviderName    string
+	ProductName     string
 }
 
 type endpointInfo struct {
-	API          string
-	Name         string
-	Description  string
-	HelpDoc      string
-	Scenario     string
-	ScenarioName string
+	Path        string
+	Name        string
+	Description string
 }
 
 func main() {
-	applicationName := os.Getenv("APPLICATION_NAME")
-	apiURL := fmt.Sprintf("http://application-registry-external-api.kyma-integration.svc.cluster.local:8081/%s/v1/metadata/services", applicationName)
+	fmt.Println("Started registration job")
 	r := registrationApp{
-		hostname:     os.Getenv("SOURCE_ID"),
-		authUsername: os.Getenv("auth_username"),
-		authPassword: os.Getenv("auth_password"),
-		apiURL:       apiURL,
-		provider:     os.Getenv("provider"),
-		product:      os.Getenv("product"),
+		ApplicationName: os.Getenv("APPLICATION_NAME"),
+		SystemURL:       os.Getenv("SYSTEM_URL"),
+		BasicUser:       os.Getenv("BASIC_USER"),
+		BasicPassword:   os.Getenv("BASIC_PASSWORD"),
+		RegistrationURL: os.Getenv("REGISTRATION_URL"),
+		ProviderName:    os.Getenv("PROVIDER_NAME"),
+		ProductName:     os.Getenv("PRODUCT_NAME"),
 	}
-	u, err := url.Parse(r.hostname)
+
+	if r.RegistrationURL == "" {
+		r.RegistrationURL = fmt.Sprintf("http://application-registry-external-api.kyma-integration.svc.cluster.local:8081/%s/v1/metadata/services", r.ApplicationName)
+	}
+	r.validateSystemURL()
+	r.registerStaticEvents()
+	r.readEndpoints()
+	fmt.Println("Finished registration job")
+}
+
+func (r registrationApp) validateSystemURL() {
+	u, err := url.Parse(r.SystemURL)
 	check(err)
 	if u.Scheme == "" {
 		u.Scheme = "https"
 	}
-	r.hostname = u.String()
-
-	r.registerStaticEvents()
-	r.readEndpoints()
+	r.SystemURL = u.String()
 }
 
 func (r registrationApp) registerStaticEvents() {
@@ -56,18 +62,20 @@ func (r registrationApp) registerStaticEvents() {
 		fmt.Println("events.json not found... Moving on.")
 		return
 	}
-	req, err := http.NewRequest("POST", r.apiURL, bytes.NewBuffer(eventsString))
+	fmt.Println("Registering events")
+	req, err := http.NewRequest("POST", r.RegistrationURL, bytes.NewBuffer(eventsString))
 	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
+	check(err)
 	defer resp.Body.Close()
-	fmt.Println("response Status:", resp.StatusCode)
-
+	if resp.StatusCode >= 300 {
+		fmt.Println("Events registered with success")
+	} else {
+		check(fmt.Errorf("Registration of events failed with status code %d", resp.StatusCode))
+	}
 }
 
 func check(e error) {
@@ -77,30 +85,32 @@ func check(e error) {
 }
 
 func (r registrationApp) readEndpoints() {
-	configString, err := ioutil.ReadFile("files/new_config.json")
+	configString, err := ioutil.ReadFile("files/apis.json")
 	if err != nil {
 		fmt.Println("new_config.json not found... Moving on.")
 		return
 	}
+	fmt.Println("Registering APIs")
 	var endpoints []endpointInfo
 	err = json.Unmarshal(configString, &endpoints)
 	check(err)
 	for _, e := range endpoints {
-		fmt.Println(e.API)
-		if r.isAPIActive(e.API) {
+		fmt.Printf("Processing API %s\n", e.Name)
+		if r.isAPIActive(e.Path) {
+			fmt.Printf("API %s is enabled, continue with registration\n", e.Name)
 			r.registerSingleAPI(r.generateMetadata(e))
+		} else {
+			fmt.Printf("Skipping API %s as it is not enabled\n", e.Name)
 		}
 	}
-
 }
 
-func (r registrationApp) isAPIActive(api string) bool {
-	url := r.hostname + "/" + api
+func (r registrationApp) isAPIActive(path string) bool {
+	url := r.SystemURL + "/" + path
 	req, err := http.NewRequest("GET", url, nil)
 	check(err)
-	req.SetBasicAuth(r.authUsername, r.authPassword)
-	req.Header.Set("accept", "application/json")
-	req.Header.Set("responseType", "json")
+	req.SetBasicAuth(r.BasicUser, r.BasicPassword)
+	req.Header.Set("Accept", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -109,8 +119,8 @@ func (r registrationApp) isAPIActive(api string) bool {
 	defer resp.Body.Close()
 	jsonResponse := make(map[string]map[string][]string)
 	if resp.StatusCode == 200 {
-		json.NewDecoder(resp.Body).Decode(&jsonResponse)
-
+		err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
+		check(err)
 		if len(jsonResponse["d"]["EntitySets"]) > 0 {
 			return true
 		}
@@ -119,32 +129,33 @@ func (r registrationApp) isAPIActive(api string) bool {
 }
 
 func (r registrationApp) registerSingleAPI(apiMetadata []byte) {
-	req, err := http.NewRequest("POST", r.apiURL, bytes.NewBuffer(apiMetadata))
+	fmt.Printf("Registering API with payload %s", apiMetadata)
+	req, err := http.NewRequest("POST", r.RegistrationURL, bytes.NewBuffer(apiMetadata))
 	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
+	check(err)
 	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		fmt.Println("API registered with success")
+	} else {
+		check(fmt.Errorf("Registration of API failed with status code %d", resp.StatusCode))
+	}
 }
 
 func (r registrationApp) generateMetadata(endpoint endpointInfo) []byte {
-	name := endpoint.Name
-	targetURL := r.hostname
-	specificationsURL, err := url.Parse(r.hostname)
+	specificationsURL, err := url.Parse(r.SystemURL)
 	check(err)
-	specificationsURL.User = url.UserPassword(r.authUsername, r.authPassword)
-	specificationsURL.Path = endpoint.API + "/$metadata"
+	specificationsURL.User = url.UserPassword(r.BasicUser, r.BasicPassword)
+	specificationsURL.Path = endpoint.Path + "/$metadata"
 
-	tokenEndpointURL := r.hostname + endpoint.API
+	tokenEndpointURL := r.SystemURL + endpoint.Path
 	metadata := fmt.Sprintf(`
 			{
 				"provider" : "%s",
 				"name": "%s - %s",
-				"identifier":"%s",
 				"description":"%s",
 				"api": {
 					"targetUrl": "%s",
@@ -161,9 +172,6 @@ func (r registrationApp) generateMetadata(endpoint endpointInfo) []byte {
 					}
 				}
 			}
-	`, r.provider, r.product, name, endpoint.API, endpoint.Description, targetURL, specificationsURL.String(), r.authUsername, r.authPassword, tokenEndpointURL)
-
-	fmt.Println(metadata)
+	`, r.ProviderName, r.ProductName, endpoint.Name, endpoint.Description, r.SystemURL, specificationsURL.String(), r.BasicUser, r.BasicPassword, tokenEndpointURL)
 	return []byte(metadata)
-
 }

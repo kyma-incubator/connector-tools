@@ -2,51 +2,78 @@
 const mqtt = require('mqtt');
 const request = require('request-promise-native');
 
-const mqttServer = process.env.MQTT_SERVER;
-const oauthServer = process.env.OAUTH_SERVER;
-const client_id = process.env.OAUTH_CLIENT_ID;
-const client_secret = process.env.OAUTH_CLIENT_SECRET;
+const sampleEvent = {
+    "eventType": "User.registered",
+    "cloudEventsVersion": "0.1",
+    "source": "https://example.com",
+    "eventTime": "2019-03-14T02:30:16Z",
+    "schemaURL": "https://example.com/ODATA_SPEC/",
+    "contentType": "application/json",
+    "data": { "myKey": "myValue" }
+};
 
-//const mqttServrer= "wss://hb-marketing-default-4c5417f4-6040-11e9-82a1-0a580a40-mqtt.sjanota.kyma.pro"
+const delay = 1000
 
-(async () => {
+const envVariables = {
+    mqqtUrl: process.env.MQTT_URL,
+    oauthUrl: process.env.OAUTH_URL,
+    clientId: process.env.OAUTH_CLIENT_ID,
+    clientSecret: process.env.OAUTH_CLIENT_SECRET
+}
 
-    const oauthToken = await request({
-        url: oauthServer, method: 'POST', json: true,
-        form: {
-            'grant_type': 'client_credentials',
-            'client_id': client_id,
-            'client_secret': client_secret
+var runAsync = async () => {
+    let oauthToken = "Bearer dummy"
+    if (envVariables.oauthUrl) {
+        try {
+            oauthToken = await request({
+                uri: envVariables.oauthUrl + "/oauth/token",
+                method: 'POST',
+                json: true,
+                form: {
+                    'grant_type': 'client_credentials',
+                    'client_id': envVariables.clientId,
+                    'client_secret': envVariables.clientSecret
+                }
+            });
+            console.log(`Received token from OAuth server: ${oauthToken.access_token}`);
+        } catch (error) {
+            console.error(`Failed retrivening a token: ${JSON.stringify(error, null, 2)}`)
+            return;
+        }
+    } else {
+        console.log("Skipping token retrieval as no OAUTH_URL variable is configured")
+    }
+
+    let client = mqtt.connect(envVariables.mqqtUrl, {
+        wsOptions: {
+            headers: {
+                'Authorization': `Bearer ${oauthToken.access_token}`
+            }
         }
     });
 
-    console.log(`token = ${oauthToken.access_token}`);
-
-    const client = mqtt.connect(mqttServer, { wsOptions: { headers: { 'authorization': `Bearer ${oauthToken.access_token}` } } });
-    const delay = 1000
-
-    const sampleEvent = {
-        "eventType": "User.registered",
-        "cloudEventsVersion": "0.1",
-        "source": "https://example.com",
-        "eventTime": "2019-03-14T02:30:16Z",
-        "schemaURL": "https://example.com/ODATA_SPEC/",
-        "contentType": "application/json",
-        "data": { "myKey": "myValue" }
-    };
-
     client.on('connect', function () {
-        console.log("connected");
+        console.log("Connected");
         setInterval(sendMessage, delay);
     });
 
-    client.on('close', function (err) {
-        console.log("error", err.message);
+    client.on('reconnect', function () {
+        console.log("Reconnected");
     });
+
+    client.on('close', function (err) {
+        console.log(`Connection closed, optional error is ${err}`);
+    });
+
+    client.on('error', function (error) {
+        console.log("Error: " + JSON.stringify(error, null, 2))
+    })
 
     function sendMessage() {
         client.publish('EXTFACTORY', JSON.stringify(sampleEvent), { qos: 1 });
         console.log('Message Sent');
     }
 
-})();
+}
+
+runAsync()

@@ -4,72 +4,41 @@ const WebSocketServer = require('ws').Server
 const Connection = require('mqtt-connection')
 const http = require('http')
 const request = require('request-promise-native');
-const server = http.createServer().listen(8080);
 
-let envVariables = {
-  sourceId: process.env.SOURCE_ID,
-  applicationName: process.env.APPLICATION_NAME,
-  auth_username: process.env.auth_username,
-  auth_password: process.env.auth_password,
-  oauth2_client_id: process.env.oauth2_client_id,
-  oauth2_client_secret: process.env.oauth2_client_secret,
-  oauth_server: process.env.oauth_server
+const envVariables = {
+  appName: process.env.APPLICATION_NAME,
+  oauthUrl: process.env.OAUTH_URL,
+  port: process.env.PORT ? process.env.PORT : 8080,
+  eventUrl: process.env.EVENT_URL ? process.env.EVENT_URL : "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events"
 }
 
-const wss = new WebSocketServer({
-  server: server,
-  verifyClient: async function (info, cb) {
-    console.log("Authenticating client....");
-    const headerToken = info.req.headers['authorization'];
-    console.log(`header token = ${headerToken}`);
-
-    if (!headerToken) {
-      cb(false, 403, 'Unauthorized request: no authentication given');
-      return;
-    }
-    else {
-      try {
-        var response = await request.get(`${envVariables.oauth_server}/validate`, { resolveWithFullResponse: true, headers: { 'authorization': headerToken } });
-        if (response.statusCode == 200) {
-          console.log('successful');
-          cb(true);
-        }
-        else {
-          console.log('authentication failed');
-          cb(false, response.statusCode, 'authentication failed');
-        }
-      }
-      catch (err) {
-        console.log(`err ${JSON.stringify(err)}`);
-        cb(false, err.statusCode, 'authentication failed');
-      }
-    }
-  }
+let wss = new WebSocketServer({
+  server: http.createServer().listen(envVariables.port),
+  verifyClient: verifyToken
 });
 
-let eventEndpoint = "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events";
+console.log(`Application Started on port ${envVariables.port}`)
 
-console.log("Application Started...")
-if (process.env.DEBUG) {
-  console.log(envVariables)
-  eventEndpoint = "http://localhost:4000/v1/events"
-}
 wss.on('connection', function (ws) {
   let stream = websocket(ws)
   // create MQTT Connection
   let connection = new Connection(stream)
 
-  // client published
   connection.on('publish', function (packet) {
-
     let event = createEvent(JSON.parse(packet.payload.toString()));
-    sendEvent(event).then((response) => {
+
+    console.log(`Publishing packet with ID ${packet.messageId} to event bus: ${JSON.stringify(event)}`);
+    request.post({
+      url: envVariables.eventUrl,
+      json: event
+    }).then((response) => {
       if (packet.messageId && response['event-id']) {
-        console.log(`puback for message ${packet.messageId}`);
+        console.log(`Sending back puback for message ${packet.messageId}`);
         connection.puback({ messageId: packet.messageId });
-        // send a puback with messageId (for QoS > 0) if we got a valid response
       }
-    }).catch((err) => console.error(err));
+    }).catch((err) => {
+      console.error(`Error while forwarding packet with ID ${packet.messageId}, error is: ${JSON.stringify(err, null, 2)}`)
+    });
   })
 
   connection.on('connect', function (packet) {
@@ -77,35 +46,72 @@ wss.on('connection', function (ws) {
     connection.connack({ returnCode: 0 });
   });
 
-  // client pinged
   connection.on('pingreq', function () {
     client.pingresp()
   });
 
-  // client subscribed
-  connection.on('subscribe', function (packet) {
-    // send a suback with messageId and granted QoS level
-    connection.suback({ granted: [packet.qos], messageId: packet.messageId })
+  connection.on('error', function (error) {
+    console.log(`Error: ${JSON.stringify(error, null, 2)}`)
   })
 
+  connection.on('subscribe', function (packet) {
+    console.log('Client subscribing');
+    connection.suback({
+      granted: [packet.qos],
+      messageId: packet.messageId
+    })
+  })
 });
 
-function createEvent(msg) {
-  return {
-    "source-id": envVariables.applicationName,
-    "event-type": msg.eventType,
-    "event-type-version": "v1", // what to use in our case?
-    "event-time": msg.eventTime,
-    "data": msg.data
+async function verifyToken(info, cb) {
+  if (!envVariables.oauthUrl) {
+    console.error("Skipping token validation as OAUTH2_URL is not configured")
+    cb(true);
+    return
+  }
+
+  let headerToken = info.req.headers['authorization'];
+  if (!headerToken) {
+    console.error("No Authorization header provided in request")
+    cb(false, 401, 'Unauthorized request: no Authorization header provided');
+    return;
+  }
+
+  if (!headerToken.startsWith("Bearer ")) {
+    console.error(`Authorizatin header does not contain a Bearer token, header value is: ${headerToken}`)
+    cb(false, 401, 'Unauthorized request: no Bearer token provided in Authorization header');
+    return;
+  }
+
+  try {
+    var response = await request.get({
+      uri: envVariables.oauthUrl + "/validate",
+      method: 'GET',
+      headers: {
+        'Authorization': headerToken
+      }
+    });
+    if (response.statusCode >= 300) {
+      console.log(`Validation of bearer token failed with status code ${response.statusCode}, token was: ${token}`);
+      cb(false, 403, 'Validation of Bearer token failed');
+      return
+    }
+
+    console.log('Token validation successful');
+    cb(true);
+  }
+  catch (err) {
+    console.log(`Error while calling validate method of OAuth server ${JSON.stringify(err, null, 2)}`);
+    cb(false, err.statusCode, 'Problem while validating provided Bearer token');
   }
 }
 
-function sendEvent(eventData) {
-  console.log("Publishing event to event bus: " + JSON.stringify(eventData));
-  return new Promise((resolve, reject) => {
-    request.post({ url: eventEndpoint, json: eventData }).then((response) => {
-      resolve(response)
-    }
-    ).catch((err) => reject(err))
-  })
+function createEvent(msg) {
+  return {
+    "source-id": envVariables.appName,
+    "event-type": msg.eventType,
+    "event-type-version": "v1",
+    "event-time": msg.eventTime,
+    "data": msg.data
+  }
 }

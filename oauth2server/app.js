@@ -1,16 +1,19 @@
-var bodyParser = require('body-parser');
-var express = require('express');
-var OAuthServer = require('express-oauth-server');
-var InMemoryCache = require('./model.js');
+"use strict"
+const bodyParser = require('body-parser');
+const express = require('express');
+const OAuthServer = require('express-oauth-server');
+const InMemoryCache = require('./model.js');
+
+const port = 8080
 
 // Create an Express application.
-var app = express();
+let app = express();
 
 // Add body parser.
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-var model = new InMemoryCache();
+let model = new InMemoryCache();
 // Add OAuth server.
 app.oauth = new OAuthServer({
   debug: true,
@@ -26,5 +29,7 @@ app.get('/validate', app.oauth.authenticate(), function(req, res) {
 });
 
 // Start listening for requests.
-app.listen(8080);
+app.listen(port);
+
+console.log(`Started server on port ${port} configured with clientId ${process.env.OAUTH_CLIENT_ID}`)
 

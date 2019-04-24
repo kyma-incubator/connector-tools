@@ -235,7 +235,7 @@ func (r registrationApp) registerSingleAPI(apiMetadata []byte) error {
 			return err
 		}
 		bodyString := string(bodyBytes)
-		check(fmt.Errorf("Registration of API failed with status code %d and response body %s", resp.StatusCode, bodyString))
+		return fmt.Errorf("Registration of API failed with status code %d and response body %s", resp.StatusCode, bodyString)
 	}
 	return nil
 }
@@ -262,7 +262,7 @@ func (r registrationApp) updateSingleAPI(id string, apiMetadata []byte) error {
 			return err
 		}
 		bodyString := string(bodyBytes)
-		check(fmt.Errorf("Registration of API failed with status code %d and response body %s", resp.StatusCode, bodyString))
+		return fmt.Errorf("Update of API failed with status code %d and response body %s", resp.StatusCode, bodyString)
 	}
 	return nil
 }

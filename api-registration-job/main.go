@@ -18,12 +18,18 @@ type registrationApp struct {
 	RegistrationURL string
 	ProviderName    string
 	ProductName     string
+	EventAPIName    string
 }
 
 type endpointInfo struct {
 	Path        string
 	Name        string
 	Description string
+}
+
+type API struct {
+	Name string `json:"name"`
+	Id   string `json:"id"`
 }
 
 func main() {
@@ -36,14 +42,17 @@ func main() {
 		RegistrationURL: os.Getenv("REGISTRATION_URL"),
 		ProviderName:    os.Getenv("PROVIDER_NAME"),
 		ProductName:     os.Getenv("PRODUCT_NAME"),
+		EventAPIName:    os.Getenv("EVENT_API_NAME"),
 	}
 
 	if r.RegistrationURL == "" {
 		r.RegistrationURL = fmt.Sprintf("http://application-registry-external-api.kyma-integration.svc.cluster.local:8081/%s/v1/metadata/services", r.ApplicationName)
 	}
 	r.validateSystemURL()
-	r.registerStaticEvents()
-	r.readEndpoints()
+	fmt.Println("Retrieving already registered APIs")
+	apis := r.getRegisteredAPIs()
+	r.registerStaticEvents(apis)
+	r.readEndpoints(apis)
 	fmt.Println("Finished registration job")
 }
 
@@ -56,14 +65,27 @@ func (r registrationApp) validateSystemURL() {
 	r.SystemURL = u.String()
 }
 
-func (r registrationApp) registerStaticEvents() {
+func (r registrationApp) registerStaticEvents(apis []API) {
 	eventsString, err := ioutil.ReadFile("files/events.json")
 	if err != nil {
 		fmt.Println("events.json not found... Moving on.")
 		return
 	}
-	fmt.Println("Registering events")
-	req, err := http.NewRequest("POST", r.RegistrationURL, bytes.NewBuffer(eventsString))
+
+	contains := false
+	id := ""
+	if r.EventAPIName != "" {
+		contains, id = containsAPI(apis, r.EventAPIName)
+	}
+
+	var req *http.Request
+	if contains {
+		fmt.Println("Updating events")
+		req, err = http.NewRequest("PUT", fmt.Sprintf("%s/%s", r.RegistrationURL, id), bytes.NewBuffer(eventsString))
+	} else {
+		fmt.Println("Registering events")
+		req, err = http.NewRequest("POST", r.RegistrationURL, bytes.NewBuffer(eventsString))
+	}
 	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
@@ -71,10 +93,13 @@ func (r registrationApp) registerStaticEvents() {
 	resp, err := client.Do(req)
 	check(err)
 	defer resp.Body.Close()
-	if resp.StatusCode >= 300 {
+	if resp.StatusCode < 300 {
 		fmt.Println("Events registered with success")
 	} else {
-		check(fmt.Errorf("Registration of events failed with status code %d", resp.StatusCode))
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		check(err)
+		bodyString := string(bodyBytes)
+		check(fmt.Errorf("Registration of events failed with status code %d and response body %s", resp.StatusCode, bodyString))
 	}
 }
 
@@ -84,65 +109,162 @@ func check(e error) {
 	}
 }
 
-func (r registrationApp) readEndpoints() {
+func (r registrationApp) readEndpoints(apis []API) {
 	configString, err := ioutil.ReadFile("files/apis.json")
 	if err != nil {
 		fmt.Println("new_config.json not found... Moving on.")
 		return
 	}
-	fmt.Println("Registering APIs")
+
+	fmt.Println("Registering new APIs")
 	var endpoints []endpointInfo
 	err = json.Unmarshal(configString, &endpoints)
 	check(err)
+	var errors = ""
 	for _, e := range endpoints {
 		fmt.Printf("Processing API %s\n", e.Name)
-		if r.isAPIActive(e.Path) {
-			fmt.Printf("API %s is enabled, continue with registration\n", e.Name)
-			r.registerSingleAPI(r.generateMetadata(e))
-		} else {
-			fmt.Printf("Skipping API %s as it is not enabled\n", e.Name)
+		active, err := r.isAPIActive(e.Path)
+		if err != nil {
+			errors = errors + err.Error() + "\n"
+			fmt.Println(err)
+			continue
 		}
+		if active {
+			fmt.Printf("API %s is enabled in remote system\n", e.Name)
+			contains, id := containsAPI(apis, fmt.Sprintf("%s - %s", r.ProductName, e.Name))
+			if contains {
+				fmt.Printf("API %s is already registered at kyma application\n", e.Name)
+				err = r.updateSingleAPI(id, r.generateMetadata(e))
+				if err != nil {
+					errors = errors + err.Error() + "\n"
+					fmt.Printf("Error while update: %s", err)
+					continue
+				}
+			} else {
+				fmt.Printf("API %s is not registered yet at kyma application\n", e.Name)
+				err = r.registerSingleAPI(r.generateMetadata(e))
+				if err != nil {
+					errors = errors + err.Error() + "\n"
+					fmt.Printf("Error while registration: %s", err)
+					continue
+				}
+			}
+		} else {
+			fmt.Printf("Skipping API %s as it is not enabled in remote system\n", e.Name)
+		}
+	}
+	if errors != "" {
+		panic(fmt.Errorf("There were errors while API registration:\n%s", errors))
 	}
 }
 
-func (r registrationApp) isAPIActive(path string) bool {
-	url := r.SystemURL + "/" + path
-	req, err := http.NewRequest("GET", url, nil)
+func containsAPI(apis []API, name string) (bool, string) {
+	for _, v := range apis {
+		if v.Name == name {
+			return true, v.Id
+		}
+	}
+	return false, ""
+}
+
+func (r registrationApp) getRegisteredAPIs() []API {
+	req, err := http.NewRequest("GET", r.RegistrationURL, nil)
 	check(err)
-	req.SetBasicAuth(r.BasicUser, r.BasicPassword)
-	req.Header.Set("Accept", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
+
+	var result []API
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}
+
+func (r registrationApp) isAPIActive(path string) (bool, error) {
+	url := r.SystemURL + "/" + path
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return false, err
+	}
+	req.SetBasicAuth(r.BasicUser, r.BasicPassword)
+	req.Header.Set("Accept", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
 	jsonResponse := make(map[string]map[string][]string)
 	if resp.StatusCode == 200 {
 		err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
-		check(err)
+		if err != nil {
+			return false, err
+		}
 		if len(jsonResponse["d"]["EntitySets"]) > 0 {
-			return true
+			return true, nil
 		}
 	}
-	return false
+	return false, nil
 }
 
-func (r registrationApp) registerSingleAPI(apiMetadata []byte) {
-	fmt.Printf("Registering API with payload %s", apiMetadata)
+func (r registrationApp) registerSingleAPI(apiMetadata []byte) error {
+	fmt.Println("Registering API")
 	req, err := http.NewRequest("POST", r.RegistrationURL, bytes.NewBuffer(apiMetadata))
-	check(err)
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= 300 {
+	if resp.StatusCode < 300 {
 		fmt.Println("API registered with success")
 	} else {
-		check(fmt.Errorf("Registration of API failed with status code %d", resp.StatusCode))
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		bodyString := string(bodyBytes)
+		check(fmt.Errorf("Registration of API failed with status code %d and response body %s", resp.StatusCode, bodyString))
 	}
+	return nil
+}
+
+func (r registrationApp) updateSingleAPI(id string, apiMetadata []byte) error {
+	fmt.Println("Updating API")
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/%s", r.RegistrationURL, id), bytes.NewBuffer(apiMetadata))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 300 {
+		fmt.Println("API updated with success")
+	} else {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		bodyString := string(bodyBytes)
+		check(fmt.Errorf("Registration of API failed with status code %d and response body %s", resp.StatusCode, bodyString))
+	}
+	return nil
 }
 
 func (r registrationApp) generateMetadata(endpoint endpointInfo) []byte {

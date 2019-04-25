@@ -37,7 +37,7 @@ var runAsync = async () => {
             });
             console.log(`Received token from OAuth server: ${oauthToken.access_token}`);
         } catch (error) {
-            console.error(`Failed retrivening a token: ${JSON.stringify(error, null, 2)}`)
+            console.error(`Failed retrieving a token: ${JSON.stringify(error, null, 2)}`)
             return;
         }
     } else {

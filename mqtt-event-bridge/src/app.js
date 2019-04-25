@@ -109,7 +109,7 @@ async function verifyToken(info, cb) {
 function createEvent(msg) {
   return {
     "source-id": envVariables.appName,
-    "event-type": msg.eventType,
+    "event-type": msg.eventType.toLowerCase(),
     "event-type-version": "v1",
     "event-time": msg.eventTime,
     "data": msg.data

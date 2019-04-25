@@ -2,16 +2,6 @@
 const mqtt = require('mqtt');
 const request = require('request-promise-native');
 
-const sampleEvent = {
-    "eventType": "User.registered",
-    "cloudEventsVersion": "0.1",
-    "source": "https://example.com",
-    "eventTime": "2019-03-14T02:30:16Z",
-    "schemaURL": "https://example.com/ODATA_SPEC/",
-    "contentType": "application/json",
-    "data": { "myKey": "myValue" }
-};
-
 const delay = 1000
 
 const envVariables = {
@@ -70,10 +60,25 @@ var runAsync = async () => {
     })
 
     function sendMessage() {
-        client.publish('EXTFACTORY', JSON.stringify(sampleEvent), { qos: 1 });
-        console.log('Message Sent');
+        let topic = "bo.marketingpermission.created"
+        let payload = generateEvent(topic)
+        client.publish(topic, JSON.stringify(payload), { qos: 1 });
+        console.log(`Message Sent with topic '${topic}' and payload ${JSON.stringify(payload, null, 2)}`);
     }
 
+    function generateEvent(topic) {
+        return {
+            eventType: topic,
+            cloudEventsVersion: "0.1",
+            source: "https://example.com",
+            eventTime: new Date().toJSON(),
+            schemaURL: "https://example.com/ODATA_SPEC/",
+            contentType: "application/json",
+            data: {
+                myKey: new Date().toJSON()
+            }
+        };
+    }
 }
 
 runAsync()

@@ -2,7 +2,7 @@
 const mqtt = require('mqtt');
 const request = require('request-promise-native');
 
-const delay = 1000
+const delay = 3000
 
 const envVariables = {
     mqqtUrl: process.env.MQTT_URL,
@@ -60,7 +60,7 @@ var runAsync = async () => {
     })
 
     function sendMessage() {
-        let topic = "bo.marketingpermission.created"
+        let topic = "BO.MarketingPermission.Changed"
         let payload = generateEvent(topic)
         client.publish(topic, JSON.stringify(payload), { qos: 1 });
         console.log(`Message Sent with topic '${topic}' and payload ${JSON.stringify(payload, null, 2)}`);
@@ -75,7 +75,12 @@ var runAsync = async () => {
             schemaURL: "https://example.com/ODATA_SPEC/",
             contentType: "application/json",
             data: {
-                myKey: new Date().toJSON()
+                KEY: [
+                    {
+                        MARKETINGPERMISSIONUUID: `${new Date().getMilliseconds()}`
+                    }
+                ],
+                CONTACTPERMISSION: "Y"
             }
         };
     }

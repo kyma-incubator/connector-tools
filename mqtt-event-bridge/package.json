@@ -14,7 +14,7 @@
     "mqtt-connection": "^4.0.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
-    "websocket-stream": "^5.4.0",
-    "ws": "^6.2.1"
+    "websocket-stream": "^5.5.0",
+    "ws": "^7.0.0"
   }
 }

@@ -47,7 +47,7 @@ wss.on('connection', function (ws) {
   });
 
   connection.on('pingreq', function () {
-    client.pingresp()
+    connection.pingresp()
   });
 
   connection.on('error', function (error) {

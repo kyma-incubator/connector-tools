@@ -186,7 +186,7 @@ func (r registrationApp) getRegisteredAPIs() []API {
 }
 
 func (r registrationApp) isAPIActive(path string) (bool, error) {
-	url := r.SystemURL + "/" + path
+	url := r.SystemURL + "/" + path + "/"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, err

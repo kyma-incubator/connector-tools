@@ -273,7 +273,7 @@ func (r registrationApp) generateMetadata(endpoint endpointInfo) []byte {
 	specificationsURL.User = url.UserPassword(r.BasicUser, r.BasicPassword)
 	specificationsURL.Path = endpoint.Path + "/$metadata"
 
-	tokenEndpointURL := fmt.Sprintf("%s/%s", r.SystemURL, endpoint.Path)
+	tokenEndpointURL := fmt.Sprintf("%s/%s/", r.SystemURL, endpoint.Path)
 	metadata := fmt.Sprintf(`
 			{
 				"provider" : "%s",

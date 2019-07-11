@@ -47,13 +47,13 @@ spec:
         ports:
         - containerPort: 8081
           name: management
-#        livenessProbe:
-#          httpGet:
-#            path: /healthz
-#            port: 8081
-#          initialDelaySeconds: 30
-#          periodSeconds: 60
-#          failureThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          failureThreshold: 2
         env:
         - name: event-gateway-base-url
           valueFrom:
@@ -123,11 +123,11 @@ metadata:
   labels:
     app: qualtrics-webhook-registration
 data:
-  event-gateway-base-url: "http://qualtrics-event-service-external-api.kyma-integration.svc.cluster.local:8081"
-  application-name: "qualtrics"
+  event-gateway-base-url: "http://{app-name}-event-service-external-api.kyma-integration.svc.cluster.local:8081"
+  application-name: "{app-name}"
   timeout-mil: "2000"
   qualtrics-base-url: "https://env.qualtrics.com"
-  subscription-url: "https://qualtrics-event.demo-ak2.cluster.extend.cx.cloud.sap/"
+  subscription-url: "{event service name}"
   refresh-interval: "60"
   refresh-cycle: "10"
 ---
@@ -137,5 +137,5 @@ metadata:
   name: qualtrics-webhook-registration-secret
 type: Opaque
 data:
-  sharedkey: a3ltYTRldmVy
-  qualtrics-apikey: a1N5VDdRSWxnOUxybFFTV0ZUNmxkMUhsV0p4S0Q4MGxVR2NQOTdiQQ==
+  sharedkey: {base64key}
+  qualtrics-apikey: {qualtricsapikey, see https://api.qualtrics.com/docs/api-key-authentication}

@@ -83,7 +83,7 @@ func (i *Qualtrics) DeleteSubscription(subscriptionID string, ctx *util.RequestC
 
 	log.WithFields(ctx.GetLoggerFields()).Debugf("Deleting Subscription %q", subscriptionID)
 
-	url, err := url.Parse(fmt.Sprintf("%s%s%s",i.URL, qualtricsApiPath, subscriptionID))
+	url, err := url.Parse(fmt.Sprintf("%s%s%s",removeTrailingSlash(i.URL), qualtricsApiPath, subscriptionID))
 
 	if err != nil {
 		log.WithFields(ctx.GetLoggerFields()).Errorf("error assembling delete url: %s", err.Error())
@@ -132,7 +132,7 @@ func (i *Qualtrics) GetSubscriptionList(ctx *util.RequestContext) ([]QualtricsSu
 
 	log.WithFields(ctx.GetLoggerFields()).Debug("Reading Qualtrics Subscriptions")
 
-	url, err := url.Parse(fmt.Sprintf("%s%s",i.URL, qualtricsApiPath))
+	url, err := url.Parse(fmt.Sprintf("%s%s",removeTrailingSlash(i.URL), qualtricsApiPath))
 
 	if err != nil {
 		log.WithFields(ctx.GetLoggerFields()).Errorf("error assembling get subscription list url: %s", err.Error())
@@ -202,7 +202,7 @@ func (i *Qualtrics) CreateSubscription(subscription *QualtricsSubscription, ctx 
 			subscription.Topics, subscription)
 	}
 
-	url, err := url.Parse(fmt.Sprintf("%s%s",i.URL, qualtricsApiPath))
+	url, err := url.Parse(fmt.Sprintf("%s%s",removeTrailingSlash(i.URL), qualtricsApiPath))
 
 	if err != nil {
 		log.WithFields(ctx.GetLoggerFields()).Errorf("error assembling create subscription url: %s", err.Error())

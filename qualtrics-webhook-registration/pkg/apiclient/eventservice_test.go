@@ -1,6 +1,7 @@
 package apiclient
 
 import (
+
 	"github.com/kyma-incubator/connector-tools/qualtrics-webhook-registration/pkg/util"
 	"io/ioutil"
 	"net/http"
@@ -68,3 +69,6 @@ func TestEventService_GetActiveSubscriptions(t *testing.T) {
 	}
 
 }
+
+
+

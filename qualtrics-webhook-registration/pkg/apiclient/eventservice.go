@@ -67,7 +67,7 @@ func (e *EventService) GetActiveSubscriptions(ctx *util.RequestContext) ([]Event
 
 	log.WithFields(ctx.GetLoggerFields()).Debug("Reading Kyma Subscriptions")
 
-	url, err := url.Parse(fmt.Sprintf("%s/%s/%s", e.URL, e.ApplicationName, kymaApiPath))
+	url, err := url.Parse(fmt.Sprintf("%s/%s/%s", removeTrailingSlash(e.URL), e.ApplicationName, kymaApiPath))
 
 	if err != nil {
 		log.WithFields(ctx.GetLoggerFields()).Errorf("error assembling get subscription list url: %s", err.Error())

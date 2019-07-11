@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qualtrics-webhook-registration
+  labels:
+    app: qualtrics-webhook-registration
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qualtrics-webhook-registration
+  template:
+    metadata:
+      labels:
+        app: qualtrics-webhook-registration
+      annotations:
+        traffic.sidecar.istio.io/includeInboundPorts: "8081"
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: qualtrics-webhook-registration
+        image: andy008/qualtrics-webhook-registration:0.0.1
+        imagePullPolicy: "Always"
+        args: 
+         - "-event-gateway-base-url"
+         - $(event-gateway-base-url)
+         - "-application-name"
+         - $(application-name)
+         - "-timeout-mil"
+         - $(timeout-mil)
+         - "-qualtrics-apikey"
+         - $(qualtrics-apikey)
+         - "-qualtrics-base-url"
+         - $(qualtrics-base-url)
+         - "-subscription-url"
+         - $(subscription-url)
+         - "-shared-key"
+         - $(shared-key)
+         - "-config-file"
+         - "conf/topic-config.json"
+         - "-refresh-interval"
+         - $(refresh-interval)
+         - "-refresh-cycle"
+         - $(refresh-cycle)
+         - "-log-level"
+         - "TRACE"
+        ports:
+        - containerPort: 8081
+          name: management
+#        livenessProbe:
+#          httpGet:
+#            path: /healthz
+#            port: 8081
+#          initialDelaySeconds: 30
+#          periodSeconds: 60
+#          failureThreshold: 2
+        env:
+        - name: event-gateway-base-url
+          valueFrom:
+            configMapKeyRef:
+              name: qualtrics-webhook-registration-params
+              key: event-gateway-base-url
+        - name: application-name
+          valueFrom:
+            configMapKeyRef:
+              name: qualtrics-webhook-registration-params
+              key: application-name
+        - name: timeout-mil
+          valueFrom:
+            configMapKeyRef:
+              name: qualtrics-webhook-registration-params
+              key: timeout-mil
+        - name: qualtrics-base-url
+          valueFrom:
+            configMapKeyRef:
+              name: qualtrics-webhook-registration-params
+              key: qualtrics-base-url
+        - name: subscription-url
+          valueFrom:
+            configMapKeyRef:
+              name: qualtrics-webhook-registration-params
+              key: subscription-url
+        - name: refresh-interval
+          valueFrom:
+            configMapKeyRef:
+              name: qualtrics-webhook-registration-params
+              key: refresh-interval
+        - name: refresh-cycle
+          valueFrom:
+            configMapKeyRef:
+              name: qualtrics-webhook-registration-params
+              key: refresh-cycle
+        - name: sharedkey
+          valueFrom:
+            secretKeyRef:
+              name: qualtrics-webhook-registration-secret
+              key: sharedkey
+        - name: qualtrics-apikey
+          valueFrom:
+            secretKeyRef:
+              name: qualtrics-webhook-registration-secret
+              key: qualtrics-apikey
+        resources:
+          limits:
+            cpu: 200m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 5Mi
+        volumeMounts:
+          - mountPath: /conf
+            name: configuration
+            readOnly: true
+      volumes:
+        - name: configuration
+          configMap:
+            name: qualtrics-webhook-registration-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qualtrics-webhook-registration-params
+  labels:
+    app: qualtrics-webhook-registration
+data:
+  event-gateway-base-url: "http://qualtrics-event-service-external-api.kyma-integration.svc.cluster.local:8081"
+  application-name: "qualtrics"
+  timeout-mil: "2000"
+  qualtrics-base-url: "https://env.qualtrics.com"
+  subscription-url: "https://qualtrics-event.demo-ak2.cluster.extend.cx.cloud.sap/"
+  refresh-interval: "60"
+  refresh-cycle: "10"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: qualtrics-webhook-registration-secret
+type: Opaque
+data:
+  sharedkey: a3ltYTRldmVy
+  qualtrics-apikey: a1N5VDdRSWxnOUxybFFTV0ZUNmxkMUhsV0p4S0Q4MGxVR2NQOTdiQQ==

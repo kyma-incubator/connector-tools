@@ -39,6 +39,9 @@ pipeline {
                         },
                         "oauth2server":{
                             execute("oauth2server")
+                        },
+                         "oauth2server":{
+                            execute("oauth2server")
                         }
                     )
                 }

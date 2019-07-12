@@ -90,11 +90,11 @@ spec:
             configMapKeyRef:
               name: qualtrics-webhook-registration-params
               key: refresh-cycle
-        - name: sharedkey
+        - name: shared-key
           valueFrom:
             secretKeyRef:
               name: qualtrics-webhook-registration-secret
-              key: sharedkey
+              key: shared-key
         - name: qualtrics-apikey
           valueFrom:
             secretKeyRef:
@@ -137,5 +137,5 @@ metadata:
   name: qualtrics-webhook-registration-secret
 type: Opaque
 data:
-  sharedkey: {base64key}
+  shared-key: {base64key}
   qualtrics-apikey: {qualtricsapikey, see https://api.qualtrics.com/docs/api-key-authentication}

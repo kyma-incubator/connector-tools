@@ -1,0 +1,348 @@
+{
+  "provider": "SAP",
+  "name": "SAP Qualtrics - Business Events",
+  "description": "Package containing all business events from Qualtrics, for details see https://api.qualtrics.com/docs/webhooks",
+  "events": {
+    "spec":{
+      "asyncapi":"1.0.0",
+      "info":{
+        "title":"Qualtrics Events",
+        "version":"v1",
+        "description":"Events coming from Qualtrics webhooks"
+      },
+      "topics":{
+
+        "controlpanel.activateSurvey.v1":{
+          "subscribe":{
+            "summary":"Survey activated",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SurveyID", "Status"
+              ],
+              "properties":{
+                "Status":{
+                  "type":"string",
+                  "example":"Complete",
+                  "description":"The result will be Active if successful"
+                },
+                "SurveyID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Survey ID of the survey that has been activated"
+                }
+              }
+            }
+          }
+        },
+        "controlpanel.deactivateSurvey.v1":{
+          "subscribe":{
+            "summary":"Survey deactivated",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SurveyID", "Status"
+              ],
+              "properties":{
+                "Status":{
+                  "type":"string",
+                  "example":"Complete",
+                  "description":"The result will be Inactive if successful"
+                },
+                "SurveyID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Survey ID of the survey that has been deactivated"
+                }
+              }
+            }
+          }
+        },
+        "surveyengine.completedResponse.v1":{
+          "subscribe":{
+            "summary":"Survey Completed (response received)",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SurveyID", "Status","ResponseID"
+              ],
+              "properties":{
+                "Status":{
+                  "type":"string",
+                  "example":"Complete",
+                  "description":"The status will always be Complete if successful"
+                },
+                "SurveyID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Survey ID of the survey whose response has been completed"
+                },
+                "ResponseID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The Response ID of the response that has been completed"
+                },
+                "RecipientID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The Recipient ID of the response that has been completed. Will only be included if non-null"
+                },
+                "ResponseEventContext":{
+                  "type":"string",
+                  "example":"this is a free text context",
+                  "description":"Custom context that can be set via the ResponseEventContext embedded data."
+                }
+              }
+            }
+          }
+        },
+        "threesixty.nominationCreated.v1":{
+          "subscribe":{
+            "summary":"Nomination for an Employee Experience 360 created",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SurveyID", "ThreeSixtyID","SubjectID", "EvaluatorID", "EvaluatorEmail", "EvaluationURL"
+              ],
+              "properties":{
+                "ThreeSixtyID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The 360 for which the nomination was created"
+                },
+                "SubjectID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Person ID of the one doing the nominating; the one that will be evaluated"
+                },
+                "EvaluatorID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The Person ID of the one being nominated that will perform the evaluation"
+                },
+                "EvaluatorEmail":{
+                  "type":"string",
+                  "example":"test@tester.com",
+                  "description":"The Email Address of the person that will perform the evaluation"
+                },
+                "Relationship":{
+                  "type":"string",
+                  "description":"The Relationship of the nomination"
+                },
+                "EvaluationURL":{
+                  "type":"string",
+                  "example":"https://qualtrics.com/survey",
+                  "description":"The link to perform the evaluation (Survey Engine Link)"
+                }
+              }
+            }
+          }
+        },
+        "threesixty.nominationRemoved.v1":{
+          "subscribe":{
+            "summary":"Nomination for an Employee Experience 360 removed",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SurveyID", "ThreeSixtyID","SubjectID", "EvaluatorID"
+              ],
+              "properties":{
+                "ThreeSixtyID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The 360 for which the nomination was removed"
+                },
+                "SubjectID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Person ID of the one doing the nominating; the one that was to be evaluated"
+                },
+                "EvaluatorID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The Person ID of the one being nominated that was to perform the evaluation"
+                },
+
+                "Relationship":{
+                  "type":"string",
+                  "description":"The Relationship of the nomination"
+                }
+              }
+            }
+          }
+        },
+        "threesixty.created.v1":{
+          "subscribe":{
+            "summary":"Creation of an Employee Experience 360",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SurveyID", "ThreeSixtyID"
+              ],
+              "properties":{
+                "ThreeSixtyID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The ID of the newly-created 360"
+                },
+                "SurveyID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The ID of associated survey"
+                },
+                "Workflow":{
+                  "type":"object",
+                  "example":{"property1":"value1", "property2": "value2"},
+                  "description":"The Workflow Settings"
+                }
+              }
+            }
+          }
+        },
+        "threesixty.evaluationStatusChanged.v1":{
+          "subscribe":{
+            "summary":"Nomination for an Employee Experience 360 created",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SurveyID", "ThreeSixtyID","SubjectID", "EvaluatorID", "Status"
+              ],
+              "properties":{
+                "ThreeSixtyID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The ID of the newly-created 360"
+                },
+                "SubjectID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Person ID of the person being evaluated"
+                },
+                "EvaluatorID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The Person ID of the one performing the evaluation"
+                },
+                "Status":{
+                  "type":"string",
+                  "example":"Finished",
+                  "description":"The Status of the evaluation (Started, Finished)"
+                },
+                "SessionID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The SessionID of the initiated open survey session"
+                },
+                "ResponseID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"(When finished) The ID of the Response"
+                },
+                "Relationship":{
+                  "type":"string",
+                  "description":"The Relationship of the nomination"
+                },
+                "Unsolicitied":{
+                  "type":"boolean",
+                  "example": true,
+                  "description":"(When finished) Boolean TRUE if the response was unsolicited, FALSE otherwise"
+                }
+              }
+            }
+          }
+        },
+        "threesixty.reportReady.v1":{
+          "subscribe":{
+            "summary":"Report of an Employee Experience 360 is ready for review",
+            "payload":{
+              "type":"object",
+              "required":[
+                "SubjectID", "ThreeSixtyID", "ReportURL"
+              ],
+              "properties":{
+                "ThreeSixtyID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The ID of the 360"
+                },
+                "SubjectID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Person ID of the subject of the report"
+                },
+                "ReportURL":{
+                  "type":"string",
+                  "example":"https://www.qualtrics.com",
+                  "description":"The URL to view the report (Currently the link to log in to the Qualtrics Portal to view the report)"
+                }
+              }
+            }
+          }
+        },
+        "threesixty.statusChanged.v1":{
+          "subscribe":{
+            "summary":"Status change of an Employee Experience 360",
+            "payload":{
+              "type":"object",
+              "required":[
+                "ThreeSixtyID", "Status"
+              ],
+              "properties":{
+                "ThreeSixtyID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The ID of the 360"
+                },
+                "Status":{
+                  "type":"string",
+                  "example":"Active",
+                  "description":"Active or Inactive"
+                }
+              }
+            }
+          }
+        },
+        "threesixty.person.statusChanged.v1":{
+          "subscribe":{
+            "summary":"Status change of an Employee Experience 360",
+            "payload":{
+              "type":"object",
+              "required":[
+                "ThreeSixtyID", "Status","SubjectID"
+              ],
+              "properties":{
+                "ThreeSixtyID":{
+                  "type":"string",
+                  "example":"R_qOxBgUrN20g169z",
+                  "description":"The ID of the 360"
+                },
+                "SubjectID":{
+                  "type":"string",
+                  "example":"SV_1AmkKSDmoZ4XlQx",
+                  "description":"The Person ID of the Subject"
+                },
+                "Status":{
+                  "type":"string",
+                  "example":"Waiting",
+                  "description":"Done or Waiting"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "documentation": {
+    "displayName": "Qualtrics API Documentation",
+    "description": "Qualtrics API Documentation for Webhooks",
+    "type": "API Doc",
+    "docs": [
+      {
+        "title": "Qualtrics API Documentation for Webhooks",
+        "type": "Link",
+        "source": "https://api.qualtrics.com/docs/webhooks"
+      }
+    ]
+  }
+}

@@ -42,6 +42,9 @@ pipeline {
                         },
                          "qualtrics-webhook-registration":{
                             execute("qualtrics-webhook-registration")
+                        },
+                         "qualtrics-event-gw":{
+                            execute("qualtrics-event-gw")
                         }
                     )
                 }

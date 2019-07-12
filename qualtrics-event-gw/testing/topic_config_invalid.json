@@ -1,0 +1,12 @@
+[
+    {
+        "qualtricsTopicRegex": "test",
+        "kymaEventName": "test",
+        "kymaEventVersion": "v1" 
+    }
+    {
+        "qualtricsTopicRegex": "test2",
+        "kymaEventName": "test",
+        "kymaEventVersion": "v2" 
+    }
+]

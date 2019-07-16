@@ -1,0 +1,52 @@
+[
+    {
+        "qualtricsTopic": "surveyengine.completedResponse.*",
+        "kymaEventName": "surveyengine.completedResponse",
+        "kymaEventVersion": "v1" 
+    },
+    {
+        "qualtricsTopic": "controlpanel.deactivateSurvey",
+        "kymaEventName": "controlpanel.deactivateSurvey",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "controlpanel.activateSurvey",
+        "kymaEventName": "controlpanel.activateSurvey",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "threesixty.nominationCreated",
+        "kymaEventName": "threesixty.nominationCreated",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "threesixty.nominationRemoved",
+        "kymaEventName": "threesixty.nominationRemoved",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "threesixty.created",
+        "kymaEventName": "threesixty.created",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "threesixty.evaluationStatusChanged",
+        "kymaEventName": "threesixty.evaluationStatusChanged",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "threesixty.reportReady",
+        "kymaEventName": "threesixty.reportReady",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "threesixty.statusChanged",
+        "kymaEventName": "threesixty.statusChanged",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopic": "threesixty.person.statusChanged",
+        "kymaEventName": "threesixty.person.statusChanged",
+        "kymaEventVersion": "v1"
+    }
+]

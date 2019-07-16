@@ -1,0 +1,52 @@
+[
+    {
+        "qualtricsTopicRegex": "^\\w+\\.surveyengine\\.completedResponse\\.\\w+$",
+        "kymaEventName": "surveyengine.completedResponse",
+        "kymaEventVersion": "v1" 
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.controlpanel\\.deactivateSurvey$",
+        "kymaEventName": "controlpanel.deactivateSurvey",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.controlpanel\\.activateSurvey$",
+        "kymaEventName": "controlpanel.activateSurvey",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.threesixty.\\.nominationCreated$",
+        "kymaEventName": "threesixty.nominationCreated",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.threesixty\\.nominationRemoved$",
+        "kymaEventName": "threesixty.nominationRemoved",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.threesixty\\.created$",
+        "kymaEventName": "threesixty.created",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.threesixty\\.evaluationStatusChanged$",
+        "kymaEventName": "threesixty.evaluationStatusChanged",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.threesixty\\.reportReady$",
+        "kymaEventName": "threesixty.reportReady",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.threesixty\\.statusChanged$",
+        "kymaEventName": "threesixty.statusChanged",
+        "kymaEventVersion": "v1"
+    },
+    {
+        "qualtricsTopicRegex": "^\\w+\\.threesixty\\.person\\.statusChanged$",
+        "kymaEventName": "threesixty.person.statusChanged",
+        "kymaEventVersion": "v1"
+    }
+]

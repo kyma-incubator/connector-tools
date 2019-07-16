@@ -39,6 +39,12 @@ pipeline {
                         },
                         "oauth2server":{
                             execute("oauth2server")
+                        },
+                         "qualtrics-webhook-registration":{
+                            execute("qualtrics-webhook-registration")
+                        },
+                         "qualtrics-event-gw":{
+                            execute("qualtrics-event-gw")
                         }
                     )
                 }

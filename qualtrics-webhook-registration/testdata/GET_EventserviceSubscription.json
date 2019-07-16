@@ -1,0 +1,16 @@
+{
+  "eventsInfo":[
+    {
+      "name":"surveyengine.completedResponse",
+      "version":"v1"
+    },
+    {
+      "name":"threesixty.person.statusChanged",
+      "version":"v1"
+    },
+    {
+      "name":"controlpanel.deactivateSurvey",
+      "version":"v1"
+    }
+  ]
+}

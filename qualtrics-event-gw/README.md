@@ -1,5 +1,21 @@
 # qualtrics-event-gw
 
+## About
+
+This is an HTTP gateway that takes in event/webhook notifications from Qualtrics (https://api.qualtrics.com/docs/webhooks) into Kyma. It is a Qualtrics specific alternative to the default Kyma Event Gateway component. Subscriptions in Qualtrics can be managed using the qualtrics-webhook-registtration component or directly using the Qualtrics API as described in [Event Registration on Qualtrics](#Event-Registration-on-Qualtrics).
+
+## Command Line Parameters
+
+The application uses the following command line arguments to start: 
+
+  - **applicationname** (string) - Name of the application that sends the events (in Kyma) (default "qualtrics")
+  - **hmac** - supplied hmac should be validated
+  - **hmac-key** (string) - shared key used to validate origin of incoming webhook calls (simple string)
+  - **kyma-eventurl** (string) - URL that incoming events will be pushed to in internal kyma format (default "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events")
+  - **log-level** (string) - log level that should be used (can be ERROR, WARN, INFO, DEBUG, TRACE). Trace logs full events and requests  (default "ERROR")
+  - **timeout** (int) - timeout for forwarding requests to the event bus (default 2000)
+  - **topic-conf** (string) - location of the topic mapper configuration file (default "conf/topic_config.json")
+
 ## Build
 
 ```
@@ -10,7 +26,7 @@ docker push <username>/qualtrics-event-gw:<version>
 ## Local Test
 
 ```
-docker run -d -p 8080:8080 -p 8081:8081 --rm <username>//qualtrics-event-gw:<version> -kyma-eventurl http://httpbin.org/anything
+docker run -d -p 8080:8080 -p 8081:8081 -v "$(pwd)"/conf/:/conf --rm <username>/qualtrics-event-gw:<version> -kyma-eventurl http://httpbin.org/anything
 ```
 
 Then you can test:
@@ -24,38 +40,10 @@ curl -X POST \
 
 ## Kyma
 
-```
-kubectl create cm -n qualtrics qualtrics-event-gw-config --from-file conf/
-kubectl apply -f kubernetes/package.yaml -n <yournamespace>
-kubectl apply -f kubernetes/service_monitor.yaml
-```
 
-After that import the `kubernetes/Qualtrics Event GW Dashboard.json` file into Grafana.
 
-## Adaptations for cluster required
+After deployment you can import a Grafana Dashboard: `dashboard/Qualtrics Event GW Dashboard.json`.
 
-In file kubernetes/package.yaml` see things in curly braces:
-
-```
-apiVersion: v1
-kind: Secret`
-metadata:
-  name: qualtrics-event-gw-hmac
-type: Opaque
-data:
-  sharedkey: {base64key}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: qualtrics-event-gw-params
-  labels:
-    app: qualtrics-event-gw
-data:
-  application-name: "{app-name}"
-  timeout-mil: "2000"
-  kyma-eventurl: "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events"
-```
 
 ## Event Registration on Qualtrics
 
@@ -87,7 +75,3 @@ loadtest -c 1 --rps 10 \
 ```
 
 
-Analyze load w/o Grafana: 
-```
-kubectl top pods -n qualtrics -l app=qualtrics-event-gw --containers
-```

@@ -154,11 +154,10 @@ func main() {
 		"Name of the application that sends the events (in Kyma)")
 	flag.StringVar(&hmacKey, "hmac-key", "", "shared key used to validate origin of incoming webhook calls (simple string)")
 	flag.BoolVar(&validateHMAC, "hmac", false, "supplied hmac should be validated")
-	flag.StringVar(&topicConfigLocation, "topic-conf", "conf/topic_config.json", "location of the topic mapper configuration file "+
-		"(default) is conf/topic_config.json")
+	flag.StringVar(&topicConfigLocation, "topic-conf", "conf/topic_config.json", "location of the topic mapper configuration file ")
 	flag.StringVar(&logLevel, "log-level", "ERROR", "log level that should be used (can be ERROR, WARN, INFO, DEBUG, TRACE). "+
 		"Trace logs full events and requests ")
-	flag.Int64Var(&timeoutMills, "timeout", 2000, "timout for forwarding requests to the event bus (default 2000 milliseconds)")
+	flag.Int64Var(&timeoutMills, "timeout", 2000, "timeout for forwarding requests to the event bus")
 
 	flag.Parse()
 	var err error

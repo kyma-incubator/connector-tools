@@ -130,7 +130,7 @@ func main() {
 		"the service of the standard kyma event gateway (without path)")
 	flag.StringVar(&applicationName, "application-name", "qualtrics", "name of the kyma "+
 		"application for qualtrics")
-	flag.Int64Var(&timeout, "timeout-mil", 2000, "timeout in miliseconds used for all API Calls ")
+	flag.Int64Var(&timeout, "timeout-mil", 2000, "timeout in milliseconds used for all API Calls ")
 	flag.StringVar(&qualtricsAPIKey, "qualtrics-apikey", "", "APIKey used for authenticating qualtrics "+
 		"API Calls")
 	flag.StringVar(&qualtricsAPIBaseURL, "qualtrics-base-url", "", "url pointing towards "+

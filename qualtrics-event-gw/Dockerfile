@@ -1,5 +1,7 @@
-# Build the manager binary
-FROM golang:1.12.5 as builder
+
+#Build binary
+FROM golang:1.12-alpine as builder
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
 
 WORKDIR /workspace
 # Copy the go source
@@ -10,14 +12,16 @@ COPY pkg pkg/
 COPY go.mod go.mod
 COPY go.sum go.sum
 
-
-
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o qualtrics-event-gw main.go
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:latest
+# Executuion Image
+FROM scratch
 WORKDIR /
+
+# Import from builder.
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /etc/passwd /etc/passwd
+
 COPY --from=builder /workspace/qualtrics-event-gw .
 ENTRYPOINT ["/qualtrics-event-gw"]

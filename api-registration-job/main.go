@@ -8,23 +8,17 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
 type registrationApp struct {
 	ApplicationName string
 	SystemURL       string
-	BasicUser       string
-	BasicPassword   string
 	RegistrationURL string
 	ProviderName    string
 	ProductName     string
 	EventAPIName    string
-}
-
-type endpointInfo struct {
-	Path        string
-	Name        string
-	Description string
+	registrable     registrable
 }
 
 type API struct {
@@ -34,15 +28,17 @@ type API struct {
 
 func main() {
 	fmt.Println("Started registration job")
+
+	registrable := getRegistrableApp()
+
 	r := registrationApp{
 		ApplicationName: os.Getenv("APPLICATION_NAME"),
 		SystemURL:       os.Getenv("SYSTEM_URL"),
-		BasicUser:       os.Getenv("BASIC_USER"),
-		BasicPassword:   os.Getenv("BASIC_PASSWORD"),
 		RegistrationURL: os.Getenv("REGISTRATION_URL"),
 		ProviderName:    os.Getenv("PROVIDER_NAME"),
 		ProductName:     os.Getenv("PRODUCT_NAME"),
 		EventAPIName:    os.Getenv("EVENT_API_NAME"),
+		registrable:     registrable,
 	}
 
 	if r.RegistrationURL == "" {
@@ -54,6 +50,29 @@ func main() {
 	r.registerStaticEvents(apis)
 	r.readEndpoints(apis)
 	fmt.Println("Finished registration job")
+}
+
+func getRegistrableApp() registrable {
+	appKind := os.Getenv("APP_KIND")
+
+	if appKind == "" {
+		appKind = "odata"
+	}
+
+	switch strings.ToLower(appKind) {
+	case "odata":
+		return &oData{
+			BasicUser:     os.Getenv("BASIC_USER"),
+			BasicPassword: os.Getenv("BASIC_PASSWORD"),
+		}
+	case "litmos":
+		return &litmos{
+			apikey: os.Getenv("API_KEY"),
+			source: os.Getenv("SOURCE"),
+		}
+	default:
+		panic("app kind: " + appKind + "not implemented yet")
+	}
 }
 
 func (r registrationApp) validateSystemURL() {
@@ -99,7 +118,7 @@ func (r registrationApp) registerStaticEvents(apis []API) {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		check(err)
 		bodyString := string(bodyBytes)
-		check(fmt.Errorf("Registration of events failed with status code %d and response body %s", resp.StatusCode, bodyString))
+		check(fmt.Errorf("registration of events failed with status code %d and response body %s", resp.StatusCode, bodyString))
 	}
 }
 
@@ -134,7 +153,7 @@ func (r registrationApp) readEndpoints(apis []API) {
 			contains, id := containsAPI(apis, fmt.Sprintf("%s - %s", r.ProductName, e.Name))
 			if contains {
 				fmt.Printf("API %s is already registered at kyma application\n", e.Name)
-				err = r.updateSingleAPI(id, r.generateMetadata(e))
+				err = r.updateSingleAPI(id, r.registrable.generateMetadata(e, r))
 				if err != nil {
 					errors = errors + err.Error() + "\n"
 					fmt.Printf("Error while update: %s", err)
@@ -142,7 +161,7 @@ func (r registrationApp) readEndpoints(apis []API) {
 				}
 			} else {
 				fmt.Printf("API %s is not registered yet at kyma application\n", e.Name)
-				err = r.registerSingleAPI(r.generateMetadata(e))
+				err = r.registerSingleAPI(r.registrable.generateMetadata(e, r))
 				if err != nil {
 					errors = errors + err.Error() + "\n"
 					fmt.Printf("Error while registration: %s", err)
@@ -191,7 +210,8 @@ func (r registrationApp) isAPIActive(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	req.SetBasicAuth(r.BasicUser, r.BasicPassword)
+	r.registrable.setCredentials(req)
+
 	req.Header.Set("Accept", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -235,7 +255,7 @@ func (r registrationApp) registerSingleAPI(apiMetadata []byte) error {
 			return err
 		}
 		bodyString := string(bodyBytes)
-		return fmt.Errorf("Registration of API failed with status code %d and response body %s", resp.StatusCode, bodyString)
+		return fmt.Errorf("registration of API failed with status code %d and response body %s", resp.StatusCode, bodyString)
 	}
 	return nil
 }
@@ -262,38 +282,7 @@ func (r registrationApp) updateSingleAPI(id string, apiMetadata []byte) error {
 			return err
 		}
 		bodyString := string(bodyBytes)
-		return fmt.Errorf("Update of API failed with status code %d and response body %s", resp.StatusCode, bodyString)
+		return fmt.Errorf("update of API failed with status code %d and response body %s", resp.StatusCode, bodyString)
 	}
 	return nil
-}
-
-func (r registrationApp) generateMetadata(endpoint endpointInfo) []byte {
-	specificationsURL, err := url.Parse(r.SystemURL)
-	check(err)
-	specificationsURL.User = url.UserPassword(r.BasicUser, r.BasicPassword)
-	specificationsURL.Path = endpoint.Path + "/$metadata"
-
-	tokenEndpointURL := fmt.Sprintf("%s/%s/", r.SystemURL, endpoint.Path)
-	metadata := fmt.Sprintf(`
-			{
-				"provider" : "%s",
-				"name": "%s - %s",
-				"description":"%s",
-				"api": {
-					"targetUrl": "%s",
-					"SpecificationUrl":"%s",
-					"ApiType": "OData",
-					"credentials": {
-						"basic": {
-							"username":"%s",
-							"password":"%s",
-							"csrfInfo":{
-								"tokenEndpointURL":"%s"
-							}
-						}
-					}
-				}
-			}
-	`, r.ProviderName, r.ProductName, endpoint.Name, endpoint.Description, r.SystemURL, specificationsURL.String(), r.BasicUser, r.BasicPassword, tokenEndpointURL)
-	return []byte(metadata)
 }

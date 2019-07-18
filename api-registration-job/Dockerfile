@@ -1,7 +1,8 @@
 FROM golang:alpine AS build-env
 WORKDIR /src
-COPY . .
+COPY *.go ./
 
+RUN ls
 RUN go build -o registration_app
 
 # final stage

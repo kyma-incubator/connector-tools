@@ -46,3 +46,7 @@ func (a *oDataWithBasicAuth) setCredentials(request *http.Request) *http.Request
 	request.SetBasicAuth(a.BasicUser, a.BasicPassword)
 	return request
 }
+
+func (a *oDataWithBasicAuth) getAPIUrl(systemURL string, path string) string {
+	return systemURL + "/" + path + "/"
+}

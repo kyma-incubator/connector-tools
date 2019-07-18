@@ -13,4 +13,5 @@ type endpointInfo struct {
 type app interface {
 	generateMetadata(endpointInfo endpointInfo, r registrationApp) []byte
 	setCredentials(request *http.Request) *http.Request
+	getAPIUrl(systemURL string, path string) string
 }

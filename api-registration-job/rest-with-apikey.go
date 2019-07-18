@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/url"
+	"strings"
 )
 
 const format = "json"
@@ -14,9 +14,6 @@ type restWithAPIKey struct {
 }
 
 func (l *restWithAPIKey) generateMetadata(endpoint endpointInfo, r registrationApp) []byte {
-	specificationsURL, err := url.Parse(r.SystemURL)
-	check(err)
-	specificationsURL.Path = endpoint.Path + "/$metadata"
 
 	metadata := fmt.Sprintf(`
 			{
@@ -43,4 +40,15 @@ func (l *restWithAPIKey) setCredentials(request *http.Request) *http.Request {
 	request.URL.Query().Set("format", format)
 	request.URL.Query().Set("source", l.source)
 	return request
+}
+
+func (l *restWithAPIKey) getAPIUrl(systemURL string, path string) string {
+	if strings.HasSuffix(systemURL, "/") && strings.HasPrefix(path, "/") {
+		runes := []rune(path)
+		return systemURL + string(runes[1:])
+	} else if strings.HasSuffix(systemURL, "/") || strings.HasPrefix(path, "/") {
+		return systemURL + path
+	} else {
+		return systemURL + "/" + path
+	}
 }

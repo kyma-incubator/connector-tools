@@ -1,6 +1,6 @@
 FROM golang:alpine AS build-env
 WORKDIR /src
-COPY main.go .
+COPY . .
 
 RUN go build -o registration_app
 

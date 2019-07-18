@@ -18,7 +18,7 @@ type registrationApp struct {
 	ProviderName    string
 	ProductName     string
 	EventAPIName    string
-	registrable     registrable
+	app             app
 }
 
 type API struct {
@@ -38,7 +38,7 @@ func main() {
 		ProviderName:    os.Getenv("PROVIDER_NAME"),
 		ProductName:     os.Getenv("PRODUCT_NAME"),
 		EventAPIName:    os.Getenv("EVENT_API_NAME"),
-		registrable:     registrable,
+		app:             registrable,
 	}
 
 	if r.RegistrationURL == "" {
@@ -52,21 +52,22 @@ func main() {
 	fmt.Println("Finished registration job")
 }
 
-func getRegistrableApp() registrable {
+func getRegistrableApp() app {
 	appKind := os.Getenv("APP_KIND")
 
+	defaultAppKind := "odata-with-basic-auth"
 	if appKind == "" {
-		appKind = "odata"
+		appKind = defaultAppKind
 	}
 
 	switch strings.ToLower(appKind) {
-	case "odata":
-		return &oData{
+	case defaultAppKind:
+		return &oDataWithBasicAuth{
 			BasicUser:     os.Getenv("BASIC_USER"),
 			BasicPassword: os.Getenv("BASIC_PASSWORD"),
 		}
-	case "litmos":
-		return &litmos{
+	case "rest-with-apikey":
+		return &restWithAPIKey{
 			apikey: os.Getenv("API_KEY"),
 			source: os.Getenv("SOURCE"),
 		}
@@ -153,7 +154,7 @@ func (r registrationApp) readEndpoints(apis []API) {
 			contains, id := containsAPI(apis, fmt.Sprintf("%s - %s", r.ProductName, e.Name))
 			if contains {
 				fmt.Printf("API %s is already registered at kyma application\n", e.Name)
-				err = r.updateSingleAPI(id, r.registrable.generateMetadata(e, r))
+				err = r.updateSingleAPI(id, r.app.generateMetadata(e, r))
 				if err != nil {
 					errors = errors + err.Error() + "\n"
 					fmt.Printf("Error while update: %s", err)
@@ -161,7 +162,7 @@ func (r registrationApp) readEndpoints(apis []API) {
 				}
 			} else {
 				fmt.Printf("API %s is not registered yet at kyma application\n", e.Name)
-				err = r.registerSingleAPI(r.registrable.generateMetadata(e, r))
+				err = r.registerSingleAPI(r.app.generateMetadata(e, r))
 				if err != nil {
 					errors = errors + err.Error() + "\n"
 					fmt.Printf("Error while registration: %s", err)
@@ -210,7 +211,7 @@ func (r registrationApp) isAPIActive(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	r.registrable.setCredentials(req)
+	r.app.setCredentials(req)
 
 	req.Header.Set("Accept", "application/json")
 	client := &http.Client{}

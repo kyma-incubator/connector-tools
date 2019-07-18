@@ -23,7 +23,7 @@ func Test_registrationApp_generateMetadata(t *testing.T) {
 				ProductName:     "test-product",
 				SystemURL:       "https://test-hostname.com",
 				RegistrationURL: "test-url",
-				registrable: &oData{
+				app: &oDataWithBasicAuth{
 					BasicUser:     "test-auth",
 					BasicPassword: "test-pass",
 				},
@@ -38,7 +38,7 @@ func Test_registrationApp_generateMetadata(t *testing.T) {
 		}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.r.registrable.generateMetadata(tt.args.endpoint, tt.r)
+			got := tt.r.app.generateMetadata(tt.args.endpoint, tt.r)
 			var inter interface{}
 			err := json.Unmarshal(got, &inter)
 			if err != nil {

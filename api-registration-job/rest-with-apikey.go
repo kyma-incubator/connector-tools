@@ -8,12 +8,12 @@ import (
 
 const format = "json"
 
-type litmos struct {
+type restWithAPIKey struct {
 	apikey string
 	source string
 }
 
-func (l *litmos) generateMetadata(endpoint endpointInfo, r registrationApp) []byte {
+func (l *restWithAPIKey) generateMetadata(endpoint endpointInfo, r registrationApp) []byte {
 	specificationsURL, err := url.Parse(r.SystemURL)
 	check(err)
 	specificationsURL.Path = endpoint.Path + "/$metadata"
@@ -38,7 +38,7 @@ func (l *litmos) generateMetadata(endpoint endpointInfo, r registrationApp) []by
 	return []byte(metadata)
 }
 
-func (l *litmos) setCredentials(request *http.Request) *http.Request {
+func (l *restWithAPIKey) setCredentials(request *http.Request) *http.Request {
 	request.Header.Set("apikey", l.apikey)
 	request.URL.Query().Set("format", format)
 	request.URL.Query().Set("source", l.source)

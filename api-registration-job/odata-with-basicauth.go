@@ -6,12 +6,12 @@ import (
 	"net/url"
 )
 
-type oData struct {
+type oDataWithBasicAuth struct {
 	BasicUser     string
 	BasicPassword string
 }
 
-func (a *oData) generateMetadata(endpoint endpointInfo, r registrationApp) []byte {
+func (a *oDataWithBasicAuth) generateMetadata(endpoint endpointInfo, r registrationApp) []byte {
 	specificationsURL, err := url.Parse(r.SystemURL)
 	check(err)
 	specificationsURL.User = url.UserPassword(a.BasicUser, a.BasicPassword)
@@ -26,7 +26,7 @@ func (a *oData) generateMetadata(endpoint endpointInfo, r registrationApp) []byt
 				"api": {
 					"targetUrl": "%s",
 					"SpecificationUrl":"%s",
-					"ApiType": "oData",
+					"ApiType": "oDataWithBasicAuth",
 					"credentials": {
 						"basic": {
 							"username":"%s",
@@ -42,7 +42,7 @@ func (a *oData) generateMetadata(endpoint endpointInfo, r registrationApp) []byt
 	return []byte(metadata)
 }
 
-func (a *oData) setCredentials(request *http.Request) *http.Request {
+func (a *oDataWithBasicAuth) setCredentials(request *http.Request) *http.Request {
 	request.SetBasicAuth(a.BasicUser, a.BasicPassword)
 	return request
 }

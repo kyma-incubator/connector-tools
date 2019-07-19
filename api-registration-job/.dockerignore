@@ -1,1 +1,4 @@
 files
+!/Dockerfile
+!/README.md
+!/main_test.go

@@ -36,6 +36,9 @@ Furthermore the following ENV variables needs to be supplied:
 - BASIC_PASSWORD: Basic Auth Password used for protecting the APIs
 - PROVIDER_NAME: Provider name as shown in the Service Catalog 
 - PRODUCT_NAME: Product name of the connected system as shown in the Service Catalog
+- APP_KIND: Determines the API type and authentication mechanism used. 
+  - `odata-with-basicauth` (default)
+  - `rest-with-apikey`
 
 ## Development
 
@@ -47,6 +50,7 @@ export BASIC_USER=
 export BASIC_PASSWORD=
 export PROVIDER_NAME=
 export PRODUCT_NAME=
+export APP_KIND=
 
 go build -o registration_app
 ./registration_app
@@ -61,19 +65,13 @@ export BASIC_USER=
 export BASIC_PASSWORD=
 export PROVIDER_NAME=
 export PRODUCT_NAME=
+export APP_KIND=
 
 go test
 ```
 
-## Running local with docker
+## Build locally
 
-Either use latest master branch revision:
-```
-docker run -p8080:8080 -e APPLICATION_NAME=myApp -e OAUTH_URL=http://oauth2server:8080 --link oauth2server eu.gcr.io/kyma-project/incubator/mqtt-event-bridge:master
-```
-
-Or local revision:
-```
-docker build -t mqtt-event-bridge:latest .
-docker run -p8080:8080 -e APPLICATION_NAME=myApp -e OAUTH_URL=http://oauth2server:8080 --link oauth2server mqtt-event-bridge:latest
+```bash
+docker build -t api-registration-job:latest .
 ```

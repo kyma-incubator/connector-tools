@@ -31,8 +31,6 @@ func main() {
 
 	registrable := getRegistrableApp()
 
-	fmt.Printf("app is %v", registrable)
-
 	r := registrationApp{
 		ApplicationName: os.Getenv("APPLICATION_NAME"),
 		SystemURL:       os.Getenv("SYSTEM_URL"),
@@ -42,7 +40,6 @@ func main() {
 		EventAPIName:    os.Getenv("EVENT_API_NAME"),
 		app:             registrable,
 	}
-	fmt.Printf("registration app %+v\n", r)
 
 	if r.RegistrationURL == "" {
 		r.RegistrationURL = fmt.Sprintf("http://application-registry-external-api.kyma-integration.svc.cluster.local:8081/%s/v1/metadata/services", r.ApplicationName)
@@ -221,10 +218,8 @@ func (r registrationApp) isAPIActive(path string) (bool, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("got error %v", err)
 		return false, err
 	}
-	fmt.Printf("got response %v", resp)
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 200 {

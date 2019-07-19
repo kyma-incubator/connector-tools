@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -49,4 +50,17 @@ func (a *oDataWithBasicAuth) setCredentials(request *http.Request) *http.Request
 
 func (a *oDataWithBasicAuth) getAPIUrl(systemURL string, path string) string {
 	return systemURL + "/" + path + "/"
+}
+
+func (a *oDataWithBasicAuth) verifyActiveResponse(resp *http.Response) (bool, error) {
+	jsonResponse := make(map[string]map[string][]string)
+	err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
+	if err != nil {
+		return false, err
+	}
+	if len(jsonResponse["d"]["EntitySets"]) > 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }

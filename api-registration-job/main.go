@@ -31,6 +31,8 @@ func main() {
 
 	registrable := getRegistrableApp()
 
+	fmt.Printf("app is %v", registrable)
+
 	r := registrationApp{
 		ApplicationName: os.Getenv("APPLICATION_NAME"),
 		SystemURL:       os.Getenv("SYSTEM_URL"),
@@ -40,6 +42,7 @@ func main() {
 		EventAPIName:    os.Getenv("EVENT_API_NAME"),
 		app:             registrable,
 	}
+	fmt.Printf("registration app %+v\n", r)
 
 	if r.RegistrationURL == "" {
 		r.RegistrationURL = fmt.Sprintf("http://application-registry-external-api.kyma-integration.svc.cluster.local:8081/%s/v1/metadata/services", r.ApplicationName)
@@ -207,6 +210,7 @@ func (r registrationApp) getRegisteredAPIs() []API {
 
 func (r registrationApp) isAPIActive(path string) (bool, error) {
 	url := r.app.getAPIUrl(r.SystemURL, path)
+	fmt.Printf("url to test active path %s\n", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, err
@@ -217,19 +221,14 @@ func (r registrationApp) isAPIActive(path string) (bool, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Printf("got error %v", err)
 		return false, err
 	}
+	fmt.Printf("got response %v", resp)
 	defer resp.Body.Close()
 
-	jsonResponse := make(map[string]map[string][]string)
 	if resp.StatusCode == 200 {
-		err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
-		if err != nil {
-			return false, err
-		}
-		if len(jsonResponse["d"]["EntitySets"]) > 0 {
-			return true, nil
-		}
+		return r.app.verifyActiveResponse(resp)
 	}
 	return false, nil
 }

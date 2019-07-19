@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -37,8 +38,12 @@ func (l *restWithAPIKey) generateMetadata(endpoint endpointInfo, r registrationA
 
 func (l *restWithAPIKey) setCredentials(request *http.Request) *http.Request {
 	request.Header.Set("apikey", l.apikey)
-	request.URL.Query().Set("format", format)
-	request.URL.Query().Set("source", l.source)
+	q := request.URL.Query()
+	q.Add("format", format)
+	q.Add("source", l.source)
+
+	request.URL.RawQuery = q.Encode()
+
 	return request
 }
 
@@ -51,4 +56,13 @@ func (l *restWithAPIKey) getAPIUrl(systemURL string, path string) string {
 	} else {
 		return systemURL + "/" + path
 	}
+}
+
+func (l *restWithAPIKey) verifyActiveResponse(resp *http.Response) (bool, error) {
+	jsonResponse := make([]map[string]interface{}, 0)
+	err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

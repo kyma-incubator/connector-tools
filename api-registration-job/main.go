@@ -48,7 +48,7 @@ func main() {
 	fmt.Println("Retrieving already registered APIs")
 	apis := r.getRegisteredAPIs()
 	r.registerStaticEvents(apis)
-	r.readEndpoints(apis)
+	r.app.readEndpoints(apis, r)
 	fmt.Println("Finished registration job")
 }
 
@@ -68,8 +68,9 @@ func getRegistrableApp() app {
 		}
 	case "rest-with-apikey":
 		return &restWithAPIKey{
-			apikey: os.Getenv("API_KEY"),
-			source: os.Getenv("SOURCE"),
+			apikey:      os.Getenv("API_KEY"),
+			source:      os.Getenv("SOURCE"),
+			description: os.Getenv("API_DESCRIPTION"),
 		}
 	default:
 		panic("app kind: " + appKind + "not implemented yet")
@@ -126,55 +127,6 @@ func (r registrationApp) registerStaticEvents(apis []API) {
 func check(e error) {
 	if e != nil {
 		panic(e)
-	}
-}
-
-func (r registrationApp) readEndpoints(apis []API) {
-	configString, err := ioutil.ReadFile("files/apis.json")
-	if err != nil {
-		fmt.Println("new_config.json not found... Moving on.")
-		return
-	}
-
-	fmt.Println("Registering new APIs")
-	var endpoints []endpointInfo
-	err = json.Unmarshal(configString, &endpoints)
-	check(err)
-	var errors = ""
-	for _, e := range endpoints {
-		fmt.Printf("Processing API %s\n", e.Name)
-		active, err := r.isAPIActive(e.Path)
-		if err != nil {
-			errors = errors + err.Error() + "\n"
-			fmt.Println(err)
-			continue
-		}
-		if active {
-			fmt.Printf("API %s is enabled in remote system\n", e.Name)
-			contains, id := containsAPI(apis, fmt.Sprintf("%s - %s", r.ProductName, e.Name))
-			if contains {
-				fmt.Printf("API %s is already registered at kyma application\n", e.Name)
-				err = r.updateSingleAPI(id, r.app.generateMetadata(e, r))
-				if err != nil {
-					errors = errors + err.Error() + "\n"
-					fmt.Printf("Error while update: %s", err)
-					continue
-				}
-			} else {
-				fmt.Printf("API %s is not registered yet at kyma application\n", e.Name)
-				err = r.registerSingleAPI(r.app.generateMetadata(e, r))
-				if err != nil {
-					errors = errors + err.Error() + "\n"
-					fmt.Printf("Error while registration: %s", err)
-					continue
-				}
-			}
-		} else {
-			fmt.Printf("Skipping API %s as it is not enabled in remote system\n", e.Name)
-		}
-	}
-	if errors != "" {
-		panic(fmt.Errorf("There were errors while API registration:\n%s", errors))
 	}
 }
 

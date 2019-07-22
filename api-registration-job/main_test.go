@@ -9,6 +9,10 @@ func Test_registrationApp_generateMetadata(t *testing.T) {
 	type args struct {
 		endpoint endpointInfo
 	}
+	oDataWithBasicAuth := &oDataWithBasicAuth{
+		BasicUser:     "test-auth",
+		BasicPassword: "test-pass",
+	}
 	tests := []struct {
 		name string
 		r    registrationApp
@@ -23,10 +27,7 @@ func Test_registrationApp_generateMetadata(t *testing.T) {
 				ProductName:     "test-product",
 				SystemURL:       "https://test-hostname.com",
 				RegistrationURL: "test-url",
-				app: &oDataWithBasicAuth{
-					BasicUser:     "test-auth",
-					BasicPassword: "test-pass",
-				},
+				app:             oDataWithBasicAuth,
 			},
 			args: args{
 				endpoint: endpointInfo{
@@ -38,7 +39,7 @@ func Test_registrationApp_generateMetadata(t *testing.T) {
 		}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.r.app.generateMetadata(tt.args.endpoint, tt.r)
+			got := oDataWithBasicAuth.generateMetadata(tt.args.endpoint, tt.r)
 			var inter interface{}
 			err := json.Unmarshal(got, &inter)
 			if err != nil {

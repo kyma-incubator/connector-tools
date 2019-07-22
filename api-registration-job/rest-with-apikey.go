@@ -69,7 +69,7 @@ func (l *restWithAPIKey) verifyActiveResponse(resp *http.Response) (bool, error)
 }
 
 func (l *restWithAPIKey) readEndpoints(apis []API, r registrationApp) () {
-	apiName := l.apiName(registrationApp{})
+	apiName := l.apiName(r)
 	contains, id := containsAPI(apis, apiName)
 	if contains {
 		fmt.Printf("API %s is already registered at kyma application\n", apiName)

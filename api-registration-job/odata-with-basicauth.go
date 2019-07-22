@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -62,5 +63,54 @@ func (a *oDataWithBasicAuth) verifyActiveResponse(resp *http.Response) (bool, er
 		return true, nil
 	} else {
 		return false, nil
+	}
+}
+
+func (a *oDataWithBasicAuth) readEndpoints(apis []API, r registrationApp) {
+	configString, err := ioutil.ReadFile("files/apis.json")
+	if err != nil {
+		fmt.Println("new_config.json not found... Moving on.")
+		return
+	}
+
+	fmt.Println("Registering new APIs")
+	var endpoints []endpointInfo
+	err = json.Unmarshal(configString, &endpoints)
+	check(err)
+	var errors = ""
+	for _, e := range endpoints {
+		fmt.Printf("Processing API %s\n", e.Name)
+		active, err := r.isAPIActive(e.Path)
+		if err != nil {
+			errors = errors + err.Error() + "\n"
+			fmt.Println(err)
+			continue
+		}
+		if active {
+			fmt.Printf("API %s is enabled in remote system\n", e.Name)
+			contains, id := containsAPI(apis, fmt.Sprintf("%s - %s", r.ProductName, e.Name))
+			if contains {
+				fmt.Printf("API %s is already registered at kyma application\n", e.Name)
+				err = r.updateSingleAPI(id, a.generateMetadata(e, r))
+				if err != nil {
+					errors = errors + err.Error() + "\n"
+					fmt.Printf("Error while update: %s", err)
+					continue
+				}
+			} else {
+				fmt.Printf("API %s is not registered yet at kyma application\n", e.Name)
+				err = r.registerSingleAPI(a.generateMetadata(e, r))
+				if err != nil {
+					errors = errors + err.Error() + "\n"
+					fmt.Printf("Error while registration: %s", err)
+					continue
+				}
+			}
+		} else {
+			fmt.Printf("Skipping API %s as it is not enabled in remote system\n", e.Name)
+		}
+	}
+	if errors != "" {
+		panic(fmt.Errorf("There were errors while API registration:\n%s", errors))
 	}
 }

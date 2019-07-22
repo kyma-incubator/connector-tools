@@ -10,16 +10,17 @@ import (
 const format = "json"
 
 type restWithAPIKey struct {
-	apikey string
-	source string
+	apikey      string
+	source      string
+	description string
 }
 
-func (l *restWithAPIKey) generateMetadata(endpoint endpointInfo, r registrationApp) []byte {
-
+func (l *restWithAPIKey) generateMetadata(r registrationApp) []byte {
+	apiName := l.apiName(r)
 	metadata := fmt.Sprintf(`
 			{
 				"provider" : "%s",
-				"name": "%s - %s",
+				"name": "%s",
 				"description":"%s",
 				"api": {
 					"targetUrl": "%s",
@@ -32,7 +33,7 @@ func (l *restWithAPIKey) generateMetadata(endpoint endpointInfo, r registrationA
 					}
 				}
 			}
-	`, r.ProviderName, r.ProductName, endpoint.Name, endpoint.Description, r.SystemURL, format, l.source, l.apikey)
+	`, r.ProviderName, apiName, l.description, r.SystemURL, format, l.source, l.apikey)
 	return []byte(metadata)
 }
 
@@ -65,4 +66,28 @@ func (l *restWithAPIKey) verifyActiveResponse(resp *http.Response) (bool, error)
 		return false, err
 	}
 	return true, nil
+}
+
+func (l *restWithAPIKey) readEndpoints(apis []API, r registrationApp) () {
+	apiName := l.apiName(r)
+	contains, id := containsAPI(apis, apiName)
+	if contains {
+		fmt.Printf("API %s is already registered at kyma application\n", apiName)
+		err := r.updateSingleAPI(id, l.generateMetadata(r))
+
+		if err != nil {
+			fmt.Printf("error while updating API %s\n", err)
+		}
+	} else {
+		fmt.Printf("API %s is not registered yet at kyma application\n", apiName)
+		err := r.registerSingleAPI(l.generateMetadata(r))
+
+		if err != nil {
+			fmt.Printf("error while registering API %s\n", err)
+		}
+	}
+}
+
+func (l *restWithAPIKey) apiName(r registrationApp) string {
+	return fmt.Sprintf("%s-API", r.ProductName)
 }

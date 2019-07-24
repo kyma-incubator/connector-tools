@@ -149,7 +149,7 @@ func main() {
 	var timeoutMills int64
 
 	flag.StringVar(&internalEventURL, "kyma-eventurl", "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events",
-		"URL that incoming events will be pushed to in internal kyma format")
+		"URL that incoming events will be pushed to, in internal kyma format")
 	flag.StringVar(&applicationName, "applicationname", "qualtrics",
 		"Name of the application that sends the events (in Kyma)")
 	flag.StringVar(&hmacKey, "hmac-key", "", "shared key used to validate origin of incoming webhook calls (simple string)")

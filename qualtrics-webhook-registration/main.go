@@ -136,7 +136,7 @@ func main() {
 	flag.StringVar(&qualtricsAPIBaseURL, "qualtrics-base-url", "", "url pointing towards "+
 		"qualtrics v3 API (without path)")
 	flag.StringVar(&subscriptionUrl, "subscription-url", "", "url pointing towards the qualtrics gateway"+
-		"which will be registered as endpoint for al qualtrics subscriptions")
+		"which will be registered as endpoint for all qualtrics subscriptions")
 	flag.StringVar(&sharedKey, "shared-key", "", "key used for authenticating qualtrics subscriptions "+
 		"(HMAC)")
 	flag.StringVar(&configurationFileReference, "config-file", "conf/topic-config.json", "reference to "+
@@ -145,7 +145,7 @@ func main() {
 		"Trace logs full events and requests ")
 	flag.Int64Var(&refreshInterval, "refresh-interval", 60, "refresh interval in seconds for aligning kyma"+
 		" and Qualtrics")
-	flag.Int64Var(&refreshCycleQualtrics, "refresh-cycle", 0, "refresh cycle (in number of refresh intervals "+
+	flag.Int64Var(&refreshCycleQualtrics, "refresh-cycle", 0, "refresh cycle (in number of refresh intervals) "+
 		"for refreshing qualtrics subscription state cache (0 means never)")
 	flag.Parse()
 

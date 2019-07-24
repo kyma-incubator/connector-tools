@@ -1,4 +1,4 @@
-# qualtrics-webhook-registtration
+# qualtrics-webhook-registration
 
 ## About
 
@@ -15,10 +15,10 @@ The application uses the following command line arguments to start:
   - **log-level** (string) - log level that should be used (can be ERROR, WARN, INFO, DEBUG, TRACE). Trace logs full events and requests  (default "ERROR")
   - **qualtrics-apikey** (string) - APIKey used for authenticating qualtrics API Calls
   - **qualtrics-base-url** (string) - url pointing towards qualtrics v3 API (without path)
-  - **refresh-cycle** (int) -refresh cycle (in number of refresh intervals for refreshing qualtrics subscription state cache (0 means never)
+  - **refresh-cycle** (int) -refresh cycle (in number of refresh intervals) for refreshing qualtrics subscription state cache (0 means never)
   - **refresh-interval** (int) - refresh interval in seconds for aligning kyma and Qualtrics (default 60)
   - **shared-key** (string) - key used for authenticating qualtrics subscriptions (HMAC)
-  - **subscription-url** (string) - url pointing towards the qualtrics gatewaywhich will be registered as endpoint for al qualtrics subscriptions
+  - **subscription-url** (string) - url pointing towards the qualtrics gateway which will be registered as endpoint for all qualtrics subscriptions
   - **timeout-mil** (int) - timeout in milliseconds used for all API Calls  (default 2000)
 
 

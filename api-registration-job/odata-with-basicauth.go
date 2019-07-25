@@ -28,7 +28,7 @@ func (a *oDataWithBasicAuth) generateMetadata(endpoint endpointInfo, r registrat
 				"api": {
 					"targetUrl": "%s",
 					"SpecificationUrl":"%s",
-					"ApiType": "oDataWithBasicAuth",
+					"ApiType": "OData",
 					"credentials": {
 						"basic": {
 							"username":"%s",

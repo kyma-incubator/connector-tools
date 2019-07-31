@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -15,37 +17,79 @@ type restWithAPIKey struct {
 	description string
 }
 
+type ApiDefinition struct {
+	TargetUrl        string
+	SpecificationUrl string
+	QueryParameters  *map[string][]string         `json:",omitempty"`
+	Headers          *map[string][]string         `json:",omitempty"`
+	Credentials      *map[string]OAuthCredentials `json:",omitempty"`
+}
+type ApiMetadata struct {
+	Provider    string
+	Name        string
+	Description string
+	Api         ApiDefinition
+}
+
+type OAuthCredentials struct {
+	Url          string `json:",omitempty"`
+	ClientId     string `json:",omitempty"`
+	ClientSecret string `json:",omitempty"`
+}
+
 func (l *restWithAPIKey) generateMetadata(r registrationApp) []byte {
-	apiName := l.apiName(r)
-	metadata := fmt.Sprintf(`
-			{
-				"provider" : "%s",
-				"name": "%s",
-				"description":"%s",
-				"api": {
-					"targetUrl": "%s",
-					"queryParameters": {
-						"format": ["%s"],
-						"source": ["%s"]
-					},
-					"headers": {
-						"apikey": ["%s"]
-					}
-				}
-			}
-	`, r.ProviderName, apiName, l.description, r.SystemURL, format, l.source, l.apikey)
-	return []byte(metadata)
+
+	targetUrl := r.SystemURL
+
+	metadata := ApiMetadata{
+		Provider:    r.ProviderName,
+		Name:        l.apiName(r),
+		Description: l.description,
+		Api: ApiDefinition{
+			TargetUrl: targetUrl,
+		},
+	}
+
+	headers := getParams("headers.json")
+	queryParams := getParams("params.json")
+
+	if len(headers) != 0 {
+		metadata.Api.Headers = convertMap(headers)
+	}
+
+	if len(queryParams) != 0 {
+		metadata.Api.QueryParameters = convertMap(queryParams)
+	}
+
+	specUrl := getSpecificationUrl(r)
+
+	if specUrl != "" {
+		metadata.Api.SpecificationUrl = specUrl
+	}
+
+	if os.Getenv("CLIENT_ID") != "" && os.Getenv("CLIENT_SECRET") != "" && os.Getenv("OAUTH_URL") != "" {
+		fmt.Printf("Configuring oauth credentials")
+		credentialsMap := make(map[string]OAuthCredentials, 0)
+		credentialsMap["oauth"] = OAuthCredentials{
+			ClientId:     os.Getenv("CLIENT_ID"),
+			ClientSecret: os.Getenv("CLIENT_SECRET"),
+			Url:          os.Getenv("OAUTH_URL"),
+		}
+		metadata.Api.Credentials = &credentialsMap
+	}
+
+	var metadataData []byte
+	metadataData, err := json.Marshal(metadata)
+	check(err)
+
+	fmt.Printf("Metadata = %s\n", string(metadataData))
+
+	return metadataData
 }
 
 func (l *restWithAPIKey) setCredentials(request *http.Request) *http.Request {
-	request.Header.Set("apikey", l.apikey)
-	q := request.URL.Query()
-	q.Add("format", format)
-	q.Add("source", l.source)
-
-	request.URL.RawQuery = q.Encode()
-
-	return request
+	fmt.Println("setCredentials not required for rest-with-apikey registration")
+	return nil
 }
 
 func (l *restWithAPIKey) getAPIUrl(systemURL string, path string) string {
@@ -68,7 +112,7 @@ func (l *restWithAPIKey) verifyActiveResponse(resp *http.Response) (bool, error)
 	return true, nil
 }
 
-func (l *restWithAPIKey) readEndpoints(apis []API, r registrationApp) () {
+func (l *restWithAPIKey) readEndpoints(apis []API, r registrationApp) {
 	apiName := l.apiName(r)
 	contains, id := containsAPI(apis, apiName)
 	if contains {
@@ -90,4 +134,50 @@ func (l *restWithAPIKey) readEndpoints(apis []API, r registrationApp) () {
 
 func (l *restWithAPIKey) apiName(r registrationApp) string {
 	return fmt.Sprintf("%s-API", r.ProductName)
+}
+
+/**
+* Convert the headers and query parameters from the ConfigMap to json
+ */
+func getParams(file string) map[string]string {
+	var params map[string]string
+	fmt.Printf("Loading file %s \n", file)
+	paramsString, err := ioutil.ReadFile("files/" + file)
+	if err != nil {
+		fmt.Printf("%s not found... Moving on.\n", file)
+		return nil // TODO error handling
+	}
+
+	err = json.Unmarshal(paramsString, &params)
+	check(err)
+	return params
+}
+
+/**
+* Convert from map[string]string to map[string][]string, as required by the connector service
+ */
+func convertMap(origMap map[string]string) *map[string][]string {
+
+	newMap := make(map[string][]string)
+	for key, value := range origMap {
+		newMap[key] = []string{value}
+	}
+	return &newMap
+}
+
+func getSpecificationUrl(r registrationApp) string {
+
+	specUrlValue := os.Getenv("API_SPECIFICATION_URL")
+	if specUrlValue != "" {
+		// if fully qualified then use as is
+		if !strings.HasPrefix(strings.ToLower(specUrlValue), "http") {
+			specUrl := r.SystemURL
+			if !strings.HasSuffix(r.SystemURL, "/") {
+				specUrl += "/"
+			}
+			specUrl += specUrlValue
+			return specUrl
+		}
+	}
+	return ""
 }

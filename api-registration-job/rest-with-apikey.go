@@ -168,6 +168,7 @@ func convertMap(origMap map[string]string) *map[string][]string {
 func getSpecificationUrl(r registrationApp) string {
 
 	specUrlValue := os.Getenv("API_SPECIFICATION_URL")
+	fmt.Printf("API_SPECIFICATION_URL = %s\n", specUrlValue)
 	if specUrlValue != "" {
 		// if fully qualified then use as is
 		if !strings.HasPrefix(strings.ToLower(specUrlValue), "http") {
@@ -179,5 +180,5 @@ func getSpecificationUrl(r registrationApp) string {
 			return specUrl
 		}
 	}
-	return ""
+	return specUrlValue
 }

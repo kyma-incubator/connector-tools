@@ -9,7 +9,9 @@ This "Job" automates the registration of subscriptions via the Qualtrics API (ht
 The application uses the following command line arguments to start: 
 
 
-  - **application-name** (string) - name of the kyma application for qualtrics (default "qualtrics")
+  - **event-gateway-label-selector** (string) - kubernetes label selector used to identify standard event gateway service inside the kyma cluster (optional, as otherwise default will be used)
+  - **event-gateway-namespace** (string) - namespace for discovery of standard event gateway service inside the kyma cluster (default "kyma-integration")
+  - **kubeconfig** (string) - path pointing towards kubeconfig file to be used for local testing
   - **config-file** (string) - reference to json file containing topic to kyma event type / version mapping (default "conf/topic-config.json")
   - **event-gateway-base-url** (string) - url pointing towards the service of the standard kyma event gateway (without path)
   - **log-level** (string) - log level that should be used (can be ERROR, WARN, INFO, DEBUG, TRACE). Trace logs full events and requests  (default "ERROR")
@@ -31,12 +33,22 @@ docker push <username>/qualtrics-webhook-registration:<version>
 
 ## Local Test
 
+The hostname of the standard Event Gateway is determined using Kubernetes service Dicovery based on labels. Hence a cluster internal url is going to be resolved. To enable local testing, the service needs to be made available prior to testing using a port forward:
+
 ```
-docker run -d -p 8081:8081  --rm <username>/qualtrics-webhook-registration:<version> \
--event-gateway-base-url http://qualtrics-event-service-external-api.kyma-integration.svc.cluster.local:8081 \
--application-name qualtrics -timeout-mil 2000 -qualtrics-apikey <your apikey> \
+export QUALTRICS_SVC=$(kubectl get svc -n kyma-integration -l application=<application-name>,heritage=Tiller-event-service -o jsonpath="{range .items[*]}{@.metadata.name}{end}")
+kubectl port-forward -n kyma-integration svc/QUALTRICS_SVC 8081
+```
+
+Now this needs to be mapped to the "right hostname". To do that, put the output of `echo "127.0.0.1     http://$QUALTRICS_SVC.kyma-integration.svc.cluster.local"` into your `/etc/hosts` file.
+
+Now you can run
+
+```
+go run main.go healthz.go --kubeconfig <your kubeconfig> \
+-application-name qualtrics -timeout-mil 60000 -qualtrics-apikey <your apikey> \
 -qualtrics-base-url https://env.qualtrics.com \
--subscription-url https://<gw>.kymahost \
+-subscription-url <https://<gw>.kymahost> \
 -shared-key <something secret> -config-file conf/topic-config.json -log-level TRACE \
 -refresh-interval 60 -refresh-cycle 10
 ```

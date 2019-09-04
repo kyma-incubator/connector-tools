@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/kyma-incubator/connector-tools/qualtrics-event-gw/pkg/event"
 	"github.com/kyma-incubator/connector-tools/qualtrics-event-gw/pkg/httphandler"
+	"github.com/kyma-incubator/connector-tools/qualtrics-event-gw/pkg/servicediscovery"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -141,6 +142,9 @@ func management() {
 func main() {
 
 	var internalEventURL string
+	var labelSelector string
+	var kubeConfig string
+	var namespace string
 	var applicationName string
 	var hmacKey string
 	var topicConfigLocation string
@@ -148,8 +152,15 @@ func main() {
 	var validateHMAC bool
 	var timeoutMills int64
 
-	flag.StringVar(&internalEventURL, "kyma-eventurl", "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events",
-		"URL that incoming events will be pushed to, in internal kyma format")
+
+	flag.StringVar(&labelSelector, "event-gateway-label-selector", "", "kubernetes label selector "+
+		"used to identify standard event gateway service inside the kyma cluster (optional, as otherwise default will " +
+		"be used)")
+	flag.StringVar(&kubeConfig, "kubeconfig", "", "path pointing towards kubeconfig file to "+
+		"be used for local testing")
+	flag.StringVar(&namespace, "event-gateway-namespace", "kyma-integration", "namespace for "+
+		"discovery of standard event gateway service inside the kyma cluster")
+
 	flag.StringVar(&applicationName, "applicationname", "qualtrics",
 		"Name of the application that sends the events (in Kyma)")
 	flag.StringVar(&hmacKey, "hmac-key", "", "shared key used to validate origin of incoming webhook calls (simple string)")
@@ -161,6 +172,38 @@ func main() {
 
 	flag.Parse()
 	var err error
+
+	//Discover Event Gateway based on Inputs
+	var client *servicediscovery.KubernetesClient
+
+	//local testing
+	if kubeConfig != "" {
+		client, err = servicediscovery.InitOutOfCluster(kubeConfig)
+
+		if err != nil {
+			log.Fatalf("error instantiating kubernetes client: %s", err.Error())
+		}
+
+	//In Cluster
+	} else {
+		client, err = servicediscovery.InitInCluster()
+
+		if err != nil {
+			log.Fatalf("error instantiating kubernetes client: %s", err.Error())
+		}
+	}
+
+	if labelSelector == "" {
+		labelSelector = fmt.Sprintf("application=%s, heritage=Tiller-event-service", applicationName)
+	}
+
+	internalEventURL, err = client.DiscoverEventServiceURL(namespace, labelSelector, applicationName)
+
+	if err != nil {
+		log.Fatalf("error discovering kyma event gateway base url: %s", err.Error())
+	}
+
+
 	eventURL, err = url.Parse(internalEventURL)
 
 	if err != nil {
@@ -216,6 +259,11 @@ func main() {
 		},
 	})
 
+
+	fmt.Printf("Label Selector used for the kyma event gateway discovery (default is empty): %s\n",
+		labelSelector)
+	fmt.Printf("Kubeconfig file used for local testing (default is empty): %s\n", kubeConfig)
+	fmt.Printf("Namespace used for the kyma event gateway discovery: %s\n", namespace)
 	fmt.Printf("Server listening on: %q\n", server.Addr)
 	fmt.Printf("Events are forwarded to: %q\n", internalEventURL)
 	fmt.Printf("Events published in context of application: %q\n", applicationName)

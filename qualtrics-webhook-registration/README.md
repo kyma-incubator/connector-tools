@@ -33,14 +33,15 @@ docker push <username>/qualtrics-webhook-registration:<version>
 
 ## Local Test
 
-The hostname of the standard Event Gateway is determined using Kubernetes service Dicovery based on labels. Hence a cluster internal url is going to be resolved. To enable local testing, the service needs to be made available prior to testing using a port forward:
+The hostname of the standard Event Gateway is determined using Kubernetes service discovery based on labels. Hence a cluster internal url is going to be resolved. To enable local testing, the service needs to be made available prior to testing using a port forward:
 
 ```
-export QUALTRICS_SVC=$(kubectl get svc -n kyma-integration -l application=<application-name>,heritage=Tiller-event-service -o jsonpath="{range .items[*]}{@.metadata.name}{end}")
-kubectl port-forward -n kyma-integration svc/QUALTRICS_SVC 8081
+export QUALTRICS_APPNAME=<application-name>
+export QUALTRICS_SVC=$(kubectl get svc -n kyma-integration -l application=$QUALTRICS_APPNAME,heritage=Tiller-event-service -o jsonpath="{range .items[*]}{@.metadata.name}{end}")
+kubectl port-forward -n kyma-integration svc/$QUALTRICS_SVC 8081
 ```
 
-Now this needs to be mapped to the "right hostname". To do that, put the output of `echo "127.0.0.1     http://$QUALTRICS_SVC.kyma-integration.svc.cluster.local"` into your `/etc/hosts` file.
+Now this needs to be mapped to the "right hostname". To do that, put the output of `echo "127.0.0.1     $QUALTRICS_SVC.kyma-integration.svc.cluster.local"` into your `/etc/hosts` file.
 
 Now you can run
 
@@ -53,5 +54,38 @@ go run main.go healthz.go --kubeconfig <your kubeconfig> \
 -refresh-interval 60 -refresh-cycle 10
 ```
 
+Kubeconfig cannot rely on auth provider. It is recommended to download the file from your kyma cluster.
 
+## Kubernetes
+
+If you deploy this gateway inside a kyma cluster (as it is intendend), you must ensure that the right cluster roles and role bindings are in place. The service requires `list` access to the `services` resource. The below example specifies such a Cluster Role and maps it to the default service account of a namespace.
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: qualtrics-role
+  labels:
+    app: qualtrics
+rules:
+  - apiGroups: ["*"]
+    resources: ["services"]
+    verbs: ["list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: qualtrics-rolebinding
+  labels:
+    app: qualtrics
+subjects:
+  - kind: User
+    name: system:serviceaccount:<namespace>:default
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: qualtrics-role
+  apiGroup: rbac.authorization.k8s.io
+
+```
 

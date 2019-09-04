@@ -50,7 +50,6 @@ func TestProcessor_ForwardEvent(t *testing.T) {
 	//Success
 	resp, err := processor.ForwardEvent(&KymaEvent{
 		EventType:        "test",
-		SourceID:         "qualtrics",
 		EventTypeVersion: "v1",
 		Data:             `{"target":"success"}`,
 	}, ctx)
@@ -73,7 +72,6 @@ func TestProcessor_ForwardEvent(t *testing.T) {
 
 	resp, err = processor.ForwardEvent(&KymaEvent{
 		EventType:        "test",
-		SourceID:         "qualtrics",
 		EventTypeVersion: "v1",
 		Data:             `{"target":"error"}`,
 	}, ctx)

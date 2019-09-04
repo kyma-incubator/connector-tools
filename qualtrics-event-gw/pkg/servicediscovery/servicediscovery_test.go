@@ -27,13 +27,13 @@ func TestKubernetesClient_DiscoverEventServiceURL(t *testing.T) {
 	}
 
 	url, err := client.DiscoverEventServiceURL("kyma-integration",
-		"application=qualtrics, heritage=Tiller-event-service")
+		"application=qualtrics, heritage=Tiller-event-service", "qualtrics")
 
 	if err != nil {
 		t.Fatalf("Event Service discovery must not fail: %s", err.Error())
 	}
 
-	targetUrl := "http://testservice.kyma-integration.svc.cluster.local:8081"
+	targetUrl := "http://testservice.kyma-integration.svc.cluster.local:8081/qualtrics/v1/events"
 
 	if url != targetUrl {
 		t.Errorf("Returned Url should be %q, but is %q", targetUrl, url)
@@ -42,7 +42,7 @@ func TestKubernetesClient_DiscoverEventServiceURL(t *testing.T) {
 
 	//Test error for non existant service
 	_, err = client.DiscoverEventServiceURL("kyma-integration",
-		"application=doesnotexist, heritage=Tiller-event-service")
+		"application=doesnotexist, heritage=Tiller-event-service", "qualtrics")
 
 	if err == nil {
 		t.Errorf("Event Service discovery must fail, but did not")

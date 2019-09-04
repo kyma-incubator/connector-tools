@@ -63,7 +63,6 @@ func (p *InboundProcessor) HandleRequest(r *http.Request, ctx *httphandler.Reque
 	).Debugf("Event received for topic: %q", topic)
 
 	evt := KymaEvent{
-		SourceID:         p.SourceID,
 		EventType:        kymaEventType,
 		EventTypeVersion: kymaEventVersion,
 		Data:             JSONString(dataString),

@@ -22,7 +22,6 @@ func (j *JSONString) String() string {
 }
 
 type KymaEvent struct {
-	SourceID         string     `json:"source-id"`
 	EventType        string     `json:"event-type"`
 	EventTypeVersion string     `json:"event-type-version"`
 	EventTime        string     `json:"event-time"`

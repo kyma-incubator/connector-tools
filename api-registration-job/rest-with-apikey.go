@@ -18,11 +18,17 @@ type restWithAPIKey struct {
 }
 
 type ApiDefinition struct {
-	TargetUrl        string
-	SpecificationUrl string
-	QueryParameters  *map[string][]string         `json:",omitempty"`
-	Headers          *map[string][]string         `json:",omitempty"`
-	Credentials      *map[string]OAuthCredentials `json:",omitempty"`
+	TargetUrl         string
+	SpecificationUrl  string
+	QueryParameters   *map[string][]string         `json:",omitempty"`
+	Headers           *map[string][]string         `json:",omitempty"`
+	Credentials       *map[string]OAuthCredentials `json:",omitempty"`
+	RequestParameters *RequestParams               `json:",omitempty"`
+}
+
+type RequestParams struct {
+	QueryParameters *map[string][]string `json:",omitempty"`
+	Headers         *map[string][]string `json:",omitempty"`
 }
 type ApiMetadata struct {
 	Provider    string
@@ -53,18 +59,34 @@ func (l *restWithAPIKey) generateMetadata(r registrationApp) []byte {
 	headers := getParams("headers.json")
 	queryParams := getParams("params.json")
 
-	if len(headers) != 0 {
-		metadata.Api.Headers = convertMap(headers)
+	if len(headers) != 0 || len(queryParams) != 0 {
+
+		// The schema has changed for kyma 1.4 so we need to support 1.4 and
+		// prior releases. To do this we are setting the header and query params
+		// in 2 different ways. While there is no validation in the app registry
+		// this works
+
+		// create struct for 1.4
+		requestParams := new(RequestParams)
+		metadata.Api.RequestParameters = requestParams
+
+		if len(headers) != 0 {
+			headersMap := convertMap(headers)
+			metadata.Api.Headers = headersMap
+			metadata.Api.RequestParameters.Headers = headersMap
+		}
+
+		if len(queryParams) != 0 {
+			queryParamsMap := convertMap(queryParams)
+			metadata.Api.QueryParameters = queryParamsMap
+			metadata.Api.RequestParameters.QueryParameters = queryParamsMap
+		}
 	}
 
-	if len(queryParams) != 0 {
-		metadata.Api.QueryParameters = convertMap(queryParams)
-	}
+	specURL := getSpecificationUrl(r)
 
-	specUrl := getSpecificationUrl(r)
-
-	if specUrl != "" {
-		metadata.Api.SpecificationUrl = specUrl
+	if specURL != "" {
+		metadata.Api.SpecificationUrl = specURL
 	}
 
 	if os.Getenv("CLIENT_ID") != "" && os.Getenv("CLIENT_SECRET") != "" && os.Getenv("OAUTH_URL") != "" {

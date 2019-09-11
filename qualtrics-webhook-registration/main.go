@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/kyma-incubator/connector-tools/qualtrics-webhook-registration/pkg/apiclient"
 	"github.com/kyma-incubator/connector-tools/qualtrics-webhook-registration/pkg/service"
+	"github.com/kyma-incubator/connector-tools/qualtrics-webhook-registration/pkg/servicediscovery"
 	"github.com/kyma-incubator/connector-tools/qualtrics-webhook-registration/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -115,6 +116,9 @@ func manageReconcileLoop(lastSuccessfulSynchPtr **time.Time, reconciler service.
 func main() {
 
 	var kymaEventGatewayBaseURL string
+	var labelSelector string
+	var kubeConfig string
+	var namespace string
 	var applicationName string
 	var timeout int64
 	var qualtricsAPIKey string
@@ -126,8 +130,15 @@ func main() {
 	var refreshInterval int64
 	var refreshCycleQualtrics int64
 
-	flag.StringVar(&kymaEventGatewayBaseURL, "event-gateway-base-url", "", "url pointing towards "+
-		"the service of the standard kyma event gateway (without path)")
+
+	flag.StringVar(&labelSelector, "event-gateway-label-selector", "", "kubernetes label selector "+
+		"used to identify standard event gateway service inside the kyma cluster (optional, as otherwise default will " +
+		"be used)")
+	flag.StringVar(&kubeConfig, "kubeconfig", "", "path pointing towards kubeconfig file to "+
+		"be used for local testing")
+	flag.StringVar(&namespace, "event-gateway-namespace", "kyma-integration", "namespace for "+
+		"discovery of standard event gateway service inside the kyma cluster")
+
 	flag.StringVar(&applicationName, "application-name", "qualtrics", "name of the kyma "+
 		"application for qualtrics")
 	flag.Int64Var(&timeout, "timeout-mil", 2000, "timeout in milliseconds used for all API Calls ")
@@ -151,7 +162,11 @@ func main() {
 
 	logLevel = setLogLevel(logLevel)
 
-	fmt.Printf("Base URL for the kyma event Gateway: %s\n", kymaEventGatewayBaseURL)
+
+	fmt.Printf("Label Selector used for the kyma event gateway discovery (default is empty): %s\n",
+		labelSelector)
+	fmt.Printf("Kubeconfig file used for local testing (default is empty): %s\n", kubeConfig)
+	fmt.Printf("Namespace used for the kyma event gateway discovery: %s\n", namespace)
 	fmt.Printf("Kyma Application Name: %s\n", applicationName)
 	fmt.Printf("Timeout in milliseconds for API calls: %d\n", timeout)
 	fmt.Printf("Qualtrics API Key provided: %t\n", len(qualtricsAPIKey) > 0)
@@ -162,7 +177,36 @@ func main() {
 	fmt.Printf("Refresh Interval: %d\n", refreshInterval)
 	fmt.Printf("Refresh cycle Qualtrics: %d\n", refreshCycleQualtrics)
 
+	//Discover Event Gateway based on Inputs
 
+	var client *servicediscovery.KubernetesClient
+	var err error
+	//local testing
+	if kubeConfig != "" {
+		client, err = servicediscovery.InitOutOfCluster(kubeConfig)
+
+		if err != nil {
+			log.Fatalf("error instantiating kubernetes client: %s", err.Error())
+		}
+	} else {
+		client, err = servicediscovery.InitInCluster()
+
+		if err != nil {
+			log.Fatalf("error instantiating kubernetes client: %s", err.Error())
+		}
+	}
+
+	if labelSelector == "" {
+		labelSelector = fmt.Sprintf("application=%s, heritage=Tiller-event-service", applicationName)
+	}
+
+	kymaEventGatewayBaseURL, err = client.DiscoverEventServiceURL(namespace, labelSelector)
+
+	if err != nil {
+		log.Fatalf("error discovering kyma event gateway base url: %s", err.Error())
+	}
+
+	fmt.Printf("Base URL for the kyma event Gateway: %s\n", kymaEventGatewayBaseURL)
 
 	lastsucessfulSynch := time.Unix(0, 0)
 	lastsucessfulSynchPtr := &lastsucessfulSynch

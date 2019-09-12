@@ -130,9 +130,8 @@ func main() {
 	var refreshInterval int64
 	var refreshCycleQualtrics int64
 
-
 	flag.StringVar(&labelSelector, "event-gateway-label-selector", "", "kubernetes label selector "+
-		"used to identify standard event gateway service inside the kyma cluster (optional, as otherwise default will " +
+		"used to identify standard event gateway service inside the kyma cluster (optional, as otherwise default will "+
 		"be used)")
 	flag.StringVar(&kubeConfig, "kubeconfig", "", "path pointing towards kubeconfig file to "+
 		"be used for local testing")
@@ -161,7 +160,6 @@ func main() {
 	flag.Parse()
 
 	logLevel = setLogLevel(logLevel)
-
 
 	fmt.Printf("Label Selector used for the kyma event gateway discovery (default is empty): %s\n",
 		labelSelector)
@@ -197,7 +195,7 @@ func main() {
 	}
 
 	if labelSelector == "" {
-		labelSelector = fmt.Sprintf("application=%s, heritage=Tiller-event-service", applicationName)
+		labelSelector = fmt.Sprintf("app=%s-event-service", applicationName)
 	}
 
 	kymaEventGatewayBaseURL, err = client.DiscoverEventServiceURL(namespace, labelSelector)
@@ -210,7 +208,6 @@ func main() {
 
 	lastsucessfulSynch := time.Unix(0, 0)
 	lastsucessfulSynchPtr := &lastsucessfulSynch
-
 
 	//setup health checks
 	healthHandler := HealthHandler{
@@ -229,7 +226,6 @@ func main() {
 	}
 
 	go manageReconcileLoop(&lastsucessfulSynchPtr, reconciler, refreshInterval, refreshCycleQualtrics)
-
 
 	//start health check
 	log.Fatal(http.ListenAndServe(":8081", nil))

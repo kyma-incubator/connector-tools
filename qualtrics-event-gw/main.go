@@ -194,7 +194,7 @@ func main() {
 	}
 
 	if labelSelector == "" {
-		labelSelector = fmt.Sprintf("application=%s, heritage=Tiller-event-service", applicationName)
+		labelSelector = fmt.Sprintf("app=%s-event-service", applicationName)
 	}
 
 	internalEventURL, err = client.DiscoverEventServiceURL(namespace, labelSelector, applicationName)

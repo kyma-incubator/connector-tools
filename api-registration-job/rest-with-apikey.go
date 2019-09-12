@@ -155,7 +155,7 @@ func (l *restWithAPIKey) readEndpoints(apis []API, r registrationApp) {
 }
 
 func (l *restWithAPIKey) apiName(r registrationApp) string {
-	return fmt.Sprintf("%s-API", r.ProductName)
+	return fmt.Sprintf("%s - APIs", r.ProductName)
 }
 
 /**

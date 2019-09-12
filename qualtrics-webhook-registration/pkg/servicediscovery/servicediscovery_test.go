@@ -12,22 +12,23 @@ func TestKubernetesClient_DiscoverEventServiceURL(t *testing.T) {
 	client := KubernetesClient{
 		client: testclient.NewSimpleClientset(&v1.Service{
 			TypeMeta: metav1.TypeMeta{
-				Kind: "Service",
+				Kind:       "Service",
 				APIVersion: "v1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "testservice",
+				Name:      "testservice",
 				Namespace: "kyma-integration",
 				Labels: map[string]string{
+					"app":         "qualtrics-event-service",
 					"application": "qualtrics",
-					"heritage": "Tiller-event-service",
+					"heritage":    "Tiller-event-service",
 				},
 			},
 		}),
 	}
 
 	url, err := client.DiscoverEventServiceURL("kyma-integration",
-		"application=qualtrics, heritage=Tiller-event-service")
+		"app=qualtrics-event-service")
 
 	if err != nil {
 		t.Fatalf("Event Service discovery must not fail: %s", err.Error())
@@ -38,7 +39,6 @@ func TestKubernetesClient_DiscoverEventServiceURL(t *testing.T) {
 	if url != targetUrl {
 		t.Errorf("Returned Url should be %q, but is %q", targetUrl, url)
 	}
-
 
 	//Test error for non existant service
 	_, err = client.DiscoverEventServiceURL("kyma-integration",

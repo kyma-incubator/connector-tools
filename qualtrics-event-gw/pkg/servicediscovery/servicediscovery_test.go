@@ -19,6 +19,7 @@ func TestKubernetesClient_DiscoverEventServiceURL(t *testing.T) {
 				Name: "testservice",
 				Namespace: "kyma-integration",
 				Labels: map[string]string{
+					"app": "qualtrics-event-service",
 					"application": "qualtrics",
 					"heritage": "Tiller-event-service",
 				},
@@ -27,7 +28,7 @@ func TestKubernetesClient_DiscoverEventServiceURL(t *testing.T) {
 	}
 
 	url, err := client.DiscoverEventServiceURL("kyma-integration",
-		"application=qualtrics, heritage=Tiller-event-service", "qualtrics")
+		"app=qualtrics-event-service", "qualtrics")
 
 	if err != nil {
 		t.Fatalf("Event Service discovery must not fail: %s", err.Error())

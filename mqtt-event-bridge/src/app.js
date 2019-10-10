@@ -27,7 +27,7 @@ wss.on('connection', function (ws) {
   connection.on('publish', function (packet) {
     console.log(`payload = ${packet.payload.toString()}`);
     try {
-      console.log(`packet = ${JSON.stringify(packet)`);
+      console.log(`packet = ${JSON.stringify(packet)}`);
     } catch (err) {
       console.log(err); 
     }

@@ -26,6 +26,11 @@ wss.on('connection', function (ws) {
 
   connection.on('publish', function (packet) {
     console.log(`payload = ${packet.payload.toString()}`);
+    try {
+      console.log(`packet = ${JSON.stringify(packet)`);
+    } catch (err) {
+      console.log(err); 
+    }
     let event = createEvent(JSON.parse(packet.payload.toString()));
 
     console.log(`Publishing packet with ID ${packet.messageId} to event bus: ${JSON.stringify(event)}`);

@@ -9,7 +9,7 @@ const envVariables = {
   appName: process.env.APPLICATION_NAME,
   oauthUrl: process.env.OAUTH_URL,
   port: process.env.PORT ? process.env.PORT : 8080,
-  eventUrl: process.env.EVENT_URL ? process.env.EVENT_URL : "http://event-bus-publish.kyma-system.svc.cluster.local:8080/v1/events"
+  eventUrl: process.env.EVENT_URL ? process.env.EVENT_URL : "http://event-publish-service.kyma-system.svc.cluster.local:8080/v1/events"
 }
 
 let wss = new WebSocketServer({
@@ -26,11 +26,7 @@ wss.on('connection', function (ws) {
 
   connection.on('publish', function (packet) {
     console.log(`payload = ${packet.payload.toString()}`);
-    try {
-      console.log(`packet = ${JSON.stringify(packet)}`);
-    } catch (err) {
-      console.log(err); 
-    }
+   
     let event = createEvent(JSON.parse(packet.payload.toString()));
 
     console.log(`Publishing packet with ID ${packet.messageId} to event bus: ${JSON.stringify(event)}`);

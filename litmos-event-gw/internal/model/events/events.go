@@ -6,7 +6,7 @@ import (
 )
 
 type KymaEvent struct {
-	SourceID         *string     `json:"source-id"`
+	SourceID         string     `json:"source-id"`
 	EventType        string      `json:"event-type"`
 	EventTypeVersion string      `json:"event-type-version"`
 	EventID          string      `json:"event-id"`
@@ -24,7 +24,7 @@ type LitmosEvent struct {
 
 func Map(litmosEvent *LitmosEvent) *KymaEvent {
 	eventId, _ := generateEventID()
-	eventType := *config.GlobalConfig.BaseTopic + "." + litmosEvent.Type
+	eventType := config.GlobalConfig.BaseTopic + "." + litmosEvent.Type
 
 	return &KymaEvent{
 		SourceID:         config.GlobalConfig.BaseTopic,

@@ -13,17 +13,20 @@ import (
 )
 
 func main() {
+	config.ParseFlags()
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	startGateway(interrupt)
+}
+
+func startGateway(interrupt <-chan os.Signal) {
 	logger.Initialize()
 	defer logger.Logger.Sync()
 
 	logger.Logger.Info("starting service...")
-
-	config.ParseFlags()
-
 	rtr := router.New()
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	srv := http.Server{
 		Addr:    ":" + "8080",
@@ -47,4 +50,5 @@ func main() {
 	srv.Shutdown(context.Background())
 
 	logger.Logger.Info("done...")
+
 }

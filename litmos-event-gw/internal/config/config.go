@@ -2,15 +2,15 @@ package config
 
 import (
 	"flag"
-	"github.com/kyma-incubator/connector-tools/litmos-event-gw/internal/logger"
+	"log"
 )
 
 type Opts struct {
-	LogRequest         *bool
-	AppName            *string
-	EventPublishURL    *string
-	BaseTopic          *string
-	InSecureSkipVerify *bool
+	LogRequest         bool
+	AppName            string
+	EventPublishURL    string
+	BaseTopic          string
+	InSecureSkipVerify bool
 }
 
 var GlobalConfig *Opts
@@ -24,16 +24,16 @@ func ParseFlags() {
 	flag.Parse()
 
 	GlobalConfig = &Opts{
-		LogRequest:         logRequest,
-		AppName:            appName,
-		EventPublishURL:    eventPublishURL,
-		BaseTopic:          baseTopic,
-		InSecureSkipVerify: insecureSkipVerify,
+		LogRequest:         *logRequest,
+		AppName:            *appName,
+		EventPublishURL:    *eventPublishURL,
+		BaseTopic:          *baseTopic,
+		InSecureSkipVerify: *insecureSkipVerify,
 	}
 
-	if *GlobalConfig.AppName == "" {
-		logger.Logger.Panicw("Invalid configuration - Missing APP Name", "config", GlobalConfig)
+	if GlobalConfig.AppName == "" {
+		log.Panic("Invalid configuration - Missing APP Name", "config", GlobalConfig)
 	}
 
-	logger.Logger.Infow("App config", "config", GlobalConfig)
+	log.Println("App config", "config", GlobalConfig)
 }

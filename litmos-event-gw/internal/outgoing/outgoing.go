@@ -13,7 +13,7 @@ import (
 )
 
 type EventForwarder struct {
-	eventPublishURL *string
+	eventPublishURL string
 	client          *http.Client
 }
 
@@ -25,7 +25,7 @@ func NewEventForwarder() *EventForwarder {
 			MaxIdleConnsPerHost: 0,
 			MaxConnsPerHost:     0,
 			IdleConnTimeout:     30 * time.Second,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: *config.GlobalConfig.InSecureSkipVerify},
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: config.GlobalConfig.InSecureSkipVerify},
 		},
 	}
 
@@ -41,7 +41,7 @@ func (e *EventForwarder) Forward(event *events.KymaEvent) (map[string]interface{
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, *e.eventPublishURL, bytes.NewReader(eventBytes))
+	req, err := http.NewRequest(http.MethodPost, e.eventPublishURL, bytes.NewReader(eventBytes))
 	if err != nil {
 		return nil, err
 	}

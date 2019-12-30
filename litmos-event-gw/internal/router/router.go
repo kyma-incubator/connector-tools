@@ -27,7 +27,7 @@ func New() http.Handler {
 }
 
 func applyLogging(r *mux.Router) http.Handler {
-	if !*config.GlobalConfig.LogRequest {
+	if !config.GlobalConfig.LogRequest {
 		return r
 	} else {
 		return gh.LoggingHandler(os.Stdout, r)

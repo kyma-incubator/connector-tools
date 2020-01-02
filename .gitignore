@@ -1,6 +1,5 @@
 node_modules
 .env
 files
-makefile
 registration_app
 .idea

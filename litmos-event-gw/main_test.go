@@ -64,7 +64,7 @@ func TestEventIngestionSuccess(t *testing.T) {
 	}
 	b, _ := json.Marshal(le)
 
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/events", bytes.NewReader(b))
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/", bytes.NewReader(b))
 	resp, err := httpClient.Do(req)
 
 	g.Expect(err).Should(BeNil())

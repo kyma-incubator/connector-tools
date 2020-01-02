@@ -3,6 +3,7 @@ package events
 import (
 	"github.com/gofrs/uuid"
 	"github.com/kyma-incubator/connector-tools/litmos-event-gw/internal/config"
+	"time"
 )
 
 type KymaEvent struct {
@@ -30,7 +31,7 @@ func Map(litmosEvent *LitmosEvent) *KymaEvent {
 		SourceID:         config.GlobalConfig.BaseTopic,
 		EventType:        eventType,
 		EventTypeVersion: "v1",
-		EventTime:        litmosEvent.Created,
+		EventTime:        time.Now().Format(time.RFC3339),
 		Data:             litmosEvent.Data,
 		EventID:          eventId,
 	}

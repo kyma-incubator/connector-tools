@@ -1,9 +1,9 @@
-RELEASE?=0.0.2
+RELEASE?=master
 APP?=litmos-event-gw
 GOOS?=linux
 GOARCH?=amd64
-DOCKER_ACCOUNT?=gabbi
-CONTAINER_IMAGE?=${DOCKER_ACCOUNT}/${APP}
+DOCKER_REG_PATH?=eu.gcr.io/kyma-project/incubator
+CONTAINER_IMAGE?=${DOCKER_REG_PATH}/${APP}
 EP_URL?="https://passport.free.beeceptor.com/my/api/path"
 
 clean:

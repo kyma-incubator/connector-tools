@@ -18,7 +18,7 @@ func New() http.Handler {
 	r := mux.NewRouter()
 	ep := handlers.NewEventPublisher()
 
-	r.HandleFunc("/events", ep.EventHandler()).Methods(http.MethodPost)
+	r.HandleFunc("/", ep.EventHandler()).Methods(http.MethodPost)
 
 	return &Rtr{
 		Handler:        applyLogging(r),

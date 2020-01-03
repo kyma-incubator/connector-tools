@@ -1,2 +1,4 @@
 .idea
 litmos-event-gw
+/cover.out
+/codecov-token.txt

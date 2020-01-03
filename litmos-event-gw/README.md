@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/abbi-gaurav/connector-tools/branch/master/graph/badge.svg)](https://codecov.io/gh/abbi-gaurav/connector-tools)
+
 # Overview
 
 This is a HTTP gateway that takes webhook payloads from [Litmos](https://support.litmos.com/hc/en-us/articles/360022948994-Webhooks) and converts them to Kyma events.
@@ -38,10 +40,11 @@ Webhook configurations in Litmos are managed manually.
     make test-local
     ```
 
-## Versions
+## Code coverage
 
-| Version | Description                                 |
-|---------|---------------------------------------------|
-| 0.0.1   | Base working version                        |
-| 0.0.2   | Add integration tests and minor refactoring |
-|         |                                             |
+* Managed manually at present (TODO: integrate with CI)
+* To upload code coverage. Contact `gaurav.abbi@sap.com` for token.
+
+```shell script
+source codecov-token.txt && bash <(curl -s https://codecov.io/bash)
+```

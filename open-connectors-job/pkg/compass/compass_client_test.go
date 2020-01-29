@@ -117,7 +117,7 @@ func TestClient_CreateApplication(t *testing.T) {
 		w.Write([]byte(`
 {
   "data": {
-    "createApplication": {
+    "registerApplication": {
       "id": "12181107-f70b-48ca-8ab7-e97eafb36018"
     }
   }
@@ -153,7 +153,7 @@ func TestClient_CreateAPIForApplication(t *testing.T) {
 
 		w.Write([]byte(`{
   "data": {
-    "addAPI": {
+    "addAPIDefinition": {
       "id": "b731cbfc-de12-449c-8690-0d9c6e6db5cd"
     }
   }
@@ -169,7 +169,7 @@ func TestClient_CreateAPIForApplication(t *testing.T) {
 	ctx := context.Background()
 
 	id, err := client.CreateAPIForApplication(ctx, "12181107-f70b-48ca-8ab7-e97eafb36018",
-		"Test", "1", "https://api.openconnectors.ext.hanatrial.ondemand.com/elements/api-v2/",
+		"Test", "test", "1", "https://api.openconnectors.ext.hanatrial.ondemand.com/elements/api-v2/",
 		"User usr, Organization org, Element eYB6pKskPBa21vzK599fwX+Lw2jAg=",
 		`{"swagger":"2.0"}`)
 
@@ -189,7 +189,7 @@ func TestClient_DeleteApplication(t *testing.T) {
 		w.Write([]byte(`
 {
   "data": {
-    "deleteApplication": {
+    "unregisterApplication": {
       "id": "12181107-f70b-48ca-8ab7-e97eafb36018"
     }
   }

@@ -1,9 +1,9 @@
 package compass
 
-type compassCreateApplicationResponseId struct {
+type compassRegisterApplicationResponseId struct {
 	ID string `json:"id"`
 }
 
-type compassCreateApplicationResponse struct {
-	CreateApplication compassCreateApplicationResponseId `json:"createApplication"`
+type compassRegisterApplicationResponse struct {
+	RegisterApplication compassRegisterApplicationResponseId `json:"registerApplication"`
 }

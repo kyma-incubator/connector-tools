@@ -1,9 +1,9 @@
 package compass
 
-type compassCreateAPIResponseId struct {
+type compassAddAPIResponseId struct {
 	ID string `json:"id"`
 }
 
-type compassCreateAPIResponse struct {
-	AddAPI compassCreateAPIResponseId `json:"addAPI"`
+type compassAddAPIResponse struct {
+	AddAPIDefinition compassAddAPIResponseId `json:"addAPIDefinition"`
 }

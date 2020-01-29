@@ -16,7 +16,7 @@ type Connector interface {
 	GetApplications(ctx context.Context, connectorInstanceContext string) ([]Application, error)
 	CreateApplication(ctx context.Context, name string, description string, connectorInstanceContext string,
 		connectorInstanceID string) (string, error)
-	CreateAPIForApplication(ctx context.Context, applicationId string, apiName string,
+	CreateAPIForApplication(ctx context.Context, applicationId string, apiDescription string, apiID string,
 		version string, targetUrl string, authorizationHeader string, openAPISpecJsonString string) (string, error)
 	DeleteApplication(ctx context.Context, applicationId string) (string, error)
 }
@@ -54,7 +54,7 @@ func (c *Client) GetApplications(ctx context.Context, connectorInstanceContext s
       			id
       			name
 				labels
-				apis {
+				apiDefinitions {
         			data {
           				id
           				name
@@ -143,7 +143,7 @@ func (c *Client) CreateApplication(ctx context.Context, name string, description
   		$connectorInstanceContext:String!,
   		$connectorInstanceID:String!,
 	) {
-  		createApplication (in: {
+  		registerApplication (in: {
     		name: $name, 
 			description: $description,
 			labels: {
@@ -164,7 +164,7 @@ func (c *Client) CreateApplication(ctx context.Context, name string, description
 	graphQlRequest.Var("connectorInstanceContext", connectorInstanceContext)
 	graphQlRequest.Var("connectorInstanceID", connectorInstanceID)
 
-	var respData compassCreateApplicationResponse
+	var respData compassRegisterApplicationResponse
 
 	err := c.graphQlClient.Run(ctx, graphQlRequest, &respData)
 
@@ -176,35 +176,40 @@ func (c *Client) CreateApplication(ctx context.Context, name string, description
 	}
 
 
-	return respData.CreateApplication.ID, nil
+	return respData.RegisterApplication.ID, nil
 }
 
-func (c *Client) CreateAPIForApplication(ctx context.Context, applicationId string, apiName string,
+func (c *Client) CreateAPIForApplication(ctx context.Context, applicationId string, apiDescription string, apiID string,
 	version string, targetUrl string, authorizationHeader string, openAPISpecJsonString string) (string, error) {
 
 	if log.GetLevel() == log.TraceLevel {
 		log.Tracef("creating new compass API for application %q with apiName %q, version %q and " +
-			"targetUrl %q", applicationId, apiName, version, targetUrl)
+			"targetUrl %q", applicationId, apiID, version, targetUrl)
 	} else {
 		log.Debugf("creating new compass API for application %q", applicationId)
 	}
 
+	//ToDo remove deprecated and and forRemoval, this is only due to a bug in Kyma 1.9
 	graphQlRequest := graphql.NewRequest(`
     mutation (
   		$openAPISpecJsonString:CLOB!,
   		$applicationID:ID!,
   		$name:String!,
+		$description:String!,
   		$targetURL:String!,
   		$version:String!,
   		$authorization:String!
   	){
-   	addAPI( 
+   	 addAPIDefinition( 
     	applicationID: $applicationID,
     	in: {
       		name: $name
+			description: $description,
       		targetURL: $targetURL,
       		version: {
         		value: $version
+				deprecated: true
+				forRemoval: true
       		}
       		spec: {
         		type: OPEN_API
@@ -231,12 +236,13 @@ func (c *Client) CreateAPIForApplication(ctx context.Context, applicationId stri
 	graphQlRequest.Header.Set("tenant", c.tenantId)
 	graphQlRequest.Var("openAPISpecJsonString", openAPISpecJsonString)
 	graphQlRequest.Var("applicationID", applicationId)
-	graphQlRequest.Var("name", apiName)
+	graphQlRequest.Var("name", apiID)
+	graphQlRequest.Var("description", apiDescription)
 	graphQlRequest.Var("targetURL", targetUrl)
 	graphQlRequest.Var("version", version)
 	graphQlRequest.Var("authorization", authorizationHeader)
 
-	var respData compassCreateAPIResponse
+	var respData compassAddAPIResponse
 
 	err := c.graphQlClient.Run(ctx, graphQlRequest, &respData)
 
@@ -248,7 +254,7 @@ func (c *Client) CreateAPIForApplication(ctx context.Context, applicationId stri
 	}
 
 
-	return respData.AddAPI.ID, nil
+	return respData.AddAPIDefinition.ID, nil
 }
 
 func (c *Client) DeleteApplication(ctx context.Context, applicationId string) (string, error) {
@@ -257,7 +263,7 @@ func (c *Client) DeleteApplication(ctx context.Context, applicationId string) (s
 
 	graphQlRequest := graphql.NewRequest(`
     mutation ($appId:ID!) {
-  		deleteApplication(id:$appId){
+  		unregisterApplication(id:$appId){
     		id
   		}
 	}`)
@@ -265,7 +271,7 @@ func (c *Client) DeleteApplication(ctx context.Context, applicationId string) (s
 	graphQlRequest.Header.Set("tenant", c.tenantId)
 	graphQlRequest.Var("appId", applicationId)
 
-	var respData compassDeleteApplicationResponse
+	var respData compassUnregisterApplicationResponse
 
 	err := c.graphQlClient.Run(ctx, graphQlRequest, &respData)
 
@@ -277,7 +283,7 @@ func (c *Client) DeleteApplication(ctx context.Context, applicationId string) (s
 	}
 
 
-	return respData.DeleteApplication.ID, nil
+	return respData.UnregisterApplication.ID, nil
 
 }
 

@@ -12,6 +12,7 @@ import (
 func TestNewFromFile(t *testing.T) {
 
 	targetConfig := &JobConfig{
+		LogLevel: "Info",
 		Compass: CompassConfig{
 			ClientID:     "ClientID",
 			ClientSecret: "ClientSecret",

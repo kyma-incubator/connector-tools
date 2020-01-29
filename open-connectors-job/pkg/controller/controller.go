@@ -147,7 +147,8 @@ func (c *Controller) createNewApplications(ctx context.Context, instancesToAdd [
 			_, err = c.compass.CreateAPIForApplication(ctx,
 				appID,
 				fmt.Sprintf("%s: %s", instance.ConnectorName, instance.Name),
-				"",
+				instancesToAdd[i].ConnectorKey,
+				" ",
 				c.openConnectors.GetOpenConnectorsAPIURL(ctx),
 				c.openConnectors.CreateAPIAuthorizationHeader(ctx, &instance),
 				spec)

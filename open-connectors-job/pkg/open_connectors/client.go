@@ -142,6 +142,7 @@ func (c *Client) GetConnectorInstances(ctx context.Context, tags []string) ([]In
 		instances[i].Name = connectorInstanceResponse[i].Name
 		instances[i].APIKey = connectorInstanceResponse[i].Token
 		instances[i].ConnectorName = connectorInstanceResponse[i].Element.Name
+		instances[i].ConnectorKey = connectorInstanceResponse[i].Element.Key
 		instances[i].ConnectorID =strconv.FormatInt(connectorInstanceResponse[i].Element.ID, 10)
 	}
 

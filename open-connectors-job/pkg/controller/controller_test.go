@@ -86,18 +86,18 @@ func (c *compassClient) CreateApplication(ctx context.Context, name string, desc
 
 	return name, nil
 }
-func (c *compassClient) CreateAPIForApplication(ctx context.Context, applicationId string, apiName string,
+func (c *compassClient) CreateAPIForApplication(ctx context.Context, applicationId string, apiDescription string, apiID string,
 	version string, targetUrl string, authorizationHeader string, openAPISpecJsonString string) (string, error) {
 
-	if apiName == "Error: 4711-error" {
+	if apiDescription == "Error: 4711-error" {
 		return "", errorWrap.WrapError(fmt.Errorf("dummy"), "Something went wrong")
 	}
 
 	c.applicationsCreatedMutex.Lock()
-	c.apisCreated[fmt.Sprintf("%s-%s", applicationId, apiName)] = struct{}{}
+	c.apisCreated[fmt.Sprintf("%s-%s", applicationId, apiDescription)] = struct{}{}
 	c.applicationsCreatedMutex.Unlock()
 
-	return fmt.Sprintf("%s-%s", applicationId, apiName), nil
+	return fmt.Sprintf("%s-%s", applicationId, apiDescription), nil
 }
 func (c *compassClient) DeleteApplication(ctx context.Context, applicationId string) (string, error) {
 
@@ -281,6 +281,7 @@ func Test_createNewApplicationsError(t *testing.T) {
 			Name:          "Karl Küma",
 			APIKey:        "1a7ff55f-0468-4bd5-a0eb-9410836fbb0a",
 			ConnectorName: "Twitter",
+			ConnectorKey:  "twitter",
 			ConnectorID:   "1347",
 		},
 		open_connectors.Instance{
@@ -288,6 +289,7 @@ func Test_createNewApplicationsError(t *testing.T) {
 			Name:          "Karl Küma",
 			APIKey:        "1a7ff55f-0468-4bd5-a0eb-9410836fbb0a",
 			ConnectorName: "Twitter",
+			ConnectorKey:  "twitter",
 			ConnectorID:   "1347",
 		},
 		open_connectors.Instance{
@@ -295,6 +297,7 @@ func Test_createNewApplicationsError(t *testing.T) {
 			Name:          "4711-error",
 			APIKey:        "1a7ff55f-0468-4bd5-a0eb-9410836fbb0a",
 			ConnectorName: "Error",
+			ConnectorKey:  "error",
 			ConnectorID:   "1347",
 		},
 		open_connectors.Instance{
@@ -302,6 +305,7 @@ func Test_createNewApplicationsError(t *testing.T) {
 			Name:          "Karl Küma",
 			APIKey:        "1a7ff55f-0468-4bd5-a0eb-9410836fbb0a",
 			ConnectorName: "Twitter",
+			ConnectorKey:  "twitter",
 			ConnectorID:   "1347",
 		},
 	}

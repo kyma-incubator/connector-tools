@@ -16,8 +16,8 @@ func TestNew(t *testing.T) {
 		t.Fatalf("error creating open connectors API client: %s", err.Error())
 	}
 
-	if client.apiBaseUrl.String() != "https://api.openconnectors.ext.hanatrial.ondemand.com/elements/api-v2/" {
-		t.Errorf("apiHost should be \"https://api.openconnectors.ext.hanatrial.ondemand.com/elements/api-v2/\""+
+	if client.apiBaseUrl.String() != "https://api.openconnectors.ext.hanatrial.ondemand.com/elements/api-v2" {
+		t.Errorf("apiHost should be \"https://api.openconnectors.ext.hanatrial.ondemand.com/elements/api-v2\" "+
 			"but is %q", client.apiBaseUrl.String())
 	}
 }

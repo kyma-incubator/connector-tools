@@ -45,6 +45,9 @@ pipeline {
                         },
                          "qualtrics-event-gw":{
                             execute("qualtrics-event-gw")
+                        },
+			"litmos-event-gw":{
+                            execute("litmos-event-gw")
                         }
                     )
                 }

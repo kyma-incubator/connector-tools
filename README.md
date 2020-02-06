@@ -23,3 +23,10 @@ Samples for actual bundles will be provided soon.
 |---|---|
 |Qualtrics Webhook Event Gateway|Golang application that implements an endpoint to ingest Qualtrics webhook calls as events into Kyma.|
 |Qualtrics Webhook Registration|Golang application to register subscribed Qualtrics events from Kyma as Qualtrics subscriptions.|
+
+## Components of the Bundle (Open Connectors specific)
+
+|Component|Description|
+|---|---|
+|Open Connectors Job|Golang application that synchronizes the state between Compass and SAP Cloud Platform Open Connectors.|
+

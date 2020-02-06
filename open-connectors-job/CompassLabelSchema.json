@@ -1,0 +1,24 @@
+{
+  "properties": {
+    "connectorInstanceContext": {
+      "examples": [
+        "https://api.openconnectors.ext.hanatrial.ondemand.com"
+      ],
+      "title": "Context of the Connector Instance ID",
+      "type": "string"
+    },
+    "connectorInstanceID": {
+      "examples": [
+        "12345"
+      ],
+      "title": "ID of the Connector Instance",
+      "type": "string"
+    }
+  },
+  "required": [
+    "connectorInstanceID",
+    "connectorInstanceContext"
+  ],
+  "title": "Open Connectors ID Schema",
+  "type": "object"
+}

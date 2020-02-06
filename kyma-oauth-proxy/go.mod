@@ -1,4 +1,4 @@
-module github.com/jcawley5/kyma-oauth-proxy
+module github.com/kyma-incubator/connector-tools/kyma-oauth-proxy
 
 go 1.13
 

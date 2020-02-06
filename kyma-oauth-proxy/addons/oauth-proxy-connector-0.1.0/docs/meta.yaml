@@ -1,0 +1,9 @@
+docs:
+  - template:
+      displayName: "oauth-proxy-connector-0.1.0"
+      description: "oAuth Proxy Connector documentation"
+      sources:
+        - type: markdown
+          name: docs
+          mode: package
+          filter: (docs/(.*?)\.md$)

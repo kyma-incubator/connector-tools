@@ -1,0 +1,7 @@
+# Default values for fieldglass-connector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+apiRegistrationJobName: api-registration-job
+oAuthProxyName: oauth-proxy-connector
+default_api_spec_url: https://raw.githubusercontent.com/jcawley5/kyma-oauth-proxy/master/addons/api-docs/sample.json

@@ -1,0 +1,14 @@
+name: oauth-kyma-connector
+version: 0.1.0
+description: "Extends the Kyma connector, by providing request body parameters for oauth. It is not recommended for production scenarios."
+id: ef0cf2d2-f1ea-4f6f-a183-fdb73fe49bec
+displayName: "[Preview] oAuth Proxy - Connector"
+tags: preview,oauth,connector
+labels:
+  preview: "true"
+providerDisplayName: SAP
+longDescription: "Extends the Kyma connector, by providing request body parameters for oauth. It is not recommended for production use."
+documentationURL: https://kyma-project.io/
+bindable: false
+provisionOnlyOnce: false
+imageUrl: https://kyma-project.io/facebookLogo.png

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "bundle.fullname" . }}-{{ .Values.apiRegistrationJobName }}
+  labels:
+    app: {{ template "bundle.fullname" . }}
+    component: {{ template "bundle.fullname" . }}-{{ .Values.apiRegistrationJobName }}
+data:
+  APPLICATION_NAME: {{ .Values.application_name | quote }}
+  PROVIDER_NAME: "SAP"
+  PRODUCT_NAME: "Kyma oAuth Proxy"
+  APP_KIND: rest-with-apikey
+  API_DESCRIPTION: "APIs"
+  SYSTEM_URL: {{ .Values.system_url | quote }}
+  API_SPECIFICATION_URL: {{ template "api_spec_url_value" . }}
+  CLIENT_ID: "dummy"
+  CLIENT_SECRET: "dummy"
+  OAUTH_URL: {{ template "oauth_proxy_service" . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "bundle.fullname" . }}-{{ .Values.apiRegistrationJobName }}-api
+  labels:
+    app: {{ template "bundle.fullname" . }}
+    component: {{ template "bundle.fullname" . }}-{{ .Values.apiRegistrationJobName }}

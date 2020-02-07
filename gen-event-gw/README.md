@@ -12,6 +12,9 @@ This app consumes webhooks from external applications and transforms their data 
 | event-publish-url | The kyma event bus url                                                   | string | Defaults to: http://event-publish-service.kyma-system.svc.cluster.local:8080/v1/events |
 
 ## Example Usage
-go run cmd/gen-event-gw/main.go --app-name=myapp --username=testuser --password=testpw --event-type-query="param2.eventtype"
+go run cmd/gen-event-gw/main.go --app-name=myapp --username=testuser --password=testpw --event-type-query="param2.eventtype" --event-publish-url=http://httpbin.org/anything
 
 curl -X POST -H "Content-Type: application/json" --user testuser:testpw http://localhost:8080/events --data '{"param1":"xyz","param2": {"eventtype": "myTestEvent"}}'
+
+## Docker
+docker run -p 8080:8080 -d jcawley5/gen-event-gw --app-name=myapp --username=testuser --password=testpw --event-type-query="param2.eventtype" --event-publish-url=http://httpbin.org/anything

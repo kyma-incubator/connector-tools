@@ -1,5 +1,5 @@
 # Kyma Generic Event Gateway
-This app consumes webhooks from external applications and transform their data into a kyma event.
+This app consumes webhooks from external applications and transforms their data into a kyma event.
 
 
 ## Parmaters

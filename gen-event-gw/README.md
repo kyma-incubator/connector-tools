@@ -2,7 +2,7 @@
 This app consumes webhooks from external applications and transforms their data into a kyma event.
 
 
-## Parmaters
+## Parameters
 | Name              | Description                                                              | Type   | Info                                                                                   |
 | ----------------- | :----------------------------------------------------------------------- | :----- | :------------------------------------------------------------------------------------- |
 | app-name          | The name of the registered application in kyma                           | string |                                                                                        |

@@ -1,0 +1,105 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "Sample APIs Spec",
+        "version": "1.0.0",
+        "title": "Sample APIs Spec",
+        "contact": {},
+        "license": {}
+    },
+    "tags": [],
+    "paths": {
+        "/": {
+            "get": {
+                "tags": [],
+                "summary": "API to list all records for an entity",
+                "description": "API to list all records for an entity",
+                "operationId": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Entity data queried successfully. Does not necessarily mean that matching records were found"
+                    },
+                    "403": {
+                        "description": "Forbidden - Invalid session or user not authorized to use this API"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "requestBody": {}
+            },
+            "post": {
+                "summary": "API to post records to an entity",
+                "description": ".",
+                "parameters": [],
+                "operationId": "",
+                "responses": {
+                    "201": {
+                        "description": "Created - Entity insert successful"
+                    },
+                    "403": {
+                        "description": "Forbidden - Invalid session or user not authorized to use this API"
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Unexpected runtime error occurred. See ICM Application Log."
+                    }
+                },
+                "tags": [],
+                "externalDocs": {}
+            },
+            "put": {
+                "summary": "API to update records of an entity",
+                "description": "",
+                "parameters": [
+
+                ],
+                "operationId": "",
+                "responses": {
+                    "200": {
+                        "description": "OK - Entity update successful"
+                    },
+                    "403": {
+                        "description": "Forbidden - Invalid session or user not authorized to use this API"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "tags": [],
+                "externalDocs": {}
+            },
+            "delete": {
+                "summary": "API to delete an entity",
+                "description": "",
+                "parameters": [],
+                "operationId": "",
+                "responses": {
+                    "200": {
+                        "description": "OK - Entity delete successful"
+                    },
+                    "403": {
+                        "description": "Forbidden - Invalid session or user not authorized to use this API"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "tags": [],
+                "externalDocs": {}
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {},
+        "links": {},
+        "callbacks": {},
+        "schemas": {}
+    },
+    "security": [],
+    "servers": [],
+    "externalDocs": {}
+}

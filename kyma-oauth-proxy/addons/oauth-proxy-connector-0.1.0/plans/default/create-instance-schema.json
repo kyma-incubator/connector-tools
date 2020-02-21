@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "application_name": {
+      "type": "string",
+      "title": "Application Name",
+      "description": "The name of the Kyma Application where the APIs should be registered for consumption"
+    },
+    "headers": {
+      "type": "string",
+      "title": "Header Parameters",
+      "description": "Comma seperated headers for oauth in the format of h1=v1,h2=v2"
+    },
+    "formparameters": {
+      "type": "string",
+      "title": "Form Parameters",
+      "description": "Comma seperated form parameters for oauth in the format of f1=v1,f2=v2"
+    },
+    "oauth_url": {
+      "type": "string",
+      "title": "oAuth URL",
+      "description": "The URL of the oauth endpoint"
+    },
+    "system_url": {
+      "type": "string",
+      "title": "System URL",
+      "description": "The URL of the API endpoint"
+    },
+    "cluster_domain": {
+      "type": "string",
+      "title": "Cluster Domain",
+      "description": "The domain of the cluster. For example, `demo.cluster.extend.cx.cloud.sap`"
+    },
+    "api_spec_url": {
+      "type": "string",
+      "title": "API Spec URL",
+      "description": "The URL of the API specification"
+    }
+  },
+  "required": [
+    "application_name",
+    "cluster_domain",
+    "oauth_url",
+    "system_url",
+    "headers",
+    "formparameters"
+  ]
+}

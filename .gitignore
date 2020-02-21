@@ -3,3 +3,4 @@ node_modules
 files
 registration_app
 .idea
+*.DS_Store

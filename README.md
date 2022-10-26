@@ -1,3 +1,7 @@
+## :warning: **Archived**
+
+This repository has been deprecated and archived on Oct 26th, 2022.
+
 #  Connector Tools
 
 `Connector-tools` contain projects required to build a `Kyma`connector bundle. It is meant to be used for connecting an application to kyma having no built-in Kyma pairing logic provided.
